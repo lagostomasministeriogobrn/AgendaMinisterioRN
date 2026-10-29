@@ -119,7 +119,7 @@
        <div id="leyenda-colores" class="mt-4 flex flex-wrap gap-2"></div>
       </section>
 
-      <!-- PANEL DE REPORTES A MEDIDA CON RANGO DE FECHAS -->
+      <!-- PANEL DE REPORTES A MEDIDA (CERRADO) -->
       <section class="canva-panel card reveal p-4 sm:p-6 bg-gradient-to-br from-slate-900 to-slate-800 text-white shadow-xl" style="border: none;">
        <details class="group">
         <summary class="flex cursor-pointer items-center justify-between list-none select-none pb-1">
@@ -133,7 +133,6 @@
         </summary>
         
         <div class="pt-4 border-t border-slate-700 mt-3 space-y-3">
-         <!-- Rango de fechas del reporte -->
          <div class="grid grid-cols-2 gap-2 bg-slate-800 p-3 rounded-xl border border-slate-700">
            <div>
              <label class="block text-[11px] font-semibold text-slate-300 mb-1" for="report-start-date">Desde la fecha:</label>
@@ -155,9 +154,7 @@
              <input type="checkbox" id="chk-pendientes" checked class="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 accent-emerald-500">
              <span>Asuntos pendientes (con fecha al día)</span>
            </label>
-           <div id="dynamic-categories-checkboxes" class="space-y-2">
-             <!-- Categorías dinámicas -->
-           </div>
+           <div id="dynamic-categories-checkboxes" class="space-y-2"></div>
          </div>
 
          <div class="grid grid-cols-2 gap-2.5 pt-1">
@@ -172,6 +169,7 @@
        </details>
       </section>
 
+      <!-- PRÓXIMOS DÍAS (CERRADO) -->
       <section class="canva-panel card reveal p-4 sm:p-6" aria-labelledby="proximos-heading" style="background: rgb(255, 255, 255);">
        <details class="group">
         <summary class="flex cursor-pointer items-center justify-between list-none select-none">
@@ -205,9 +203,9 @@
      </aside>
     </div>
 
-    <!-- LISTADO DE ACTIVIDADES -->
+    <!-- LISTADO DE ACTIVIDADES (CERRADO) -->
     <section class="canva-panel card mt-6 reveal p-4 sm:p-6" aria-labelledby="list-heading" style="background: rgb(255, 255, 255);">
-     <details class="group" open>
+     <details class="group">
       <summary class="flex cursor-pointer items-center justify-between list-none select-none pb-2">
        <div>
         <p class="canva-text text-xs font-bold uppercase tracking-widest" style="color: rgb(23, 116, 167);">Seguimiento operativo</p>
@@ -229,9 +227,9 @@
      </details>
     </section>
 
-    <!-- ASUNTOS PENDIENTES -->
+    <!-- ASUNTOS PENDIENTES (CERRADO) -->
     <section class="canva-panel card mt-6 reveal p-4 sm:p-6" style="background: rgb(255, 255, 255);">
-     <details class="group" open>
+     <details class="group">
       <summary class="flex cursor-pointer items-center justify-between list-none select-none pb-2">
        <div>
         <p class="canva-text text-xs font-bold uppercase tracking-widest" style="color: rgb(23, 116, 167);">Notas rápidas</p>
@@ -381,9 +379,11 @@
       }).sort((a,b)=>parts(a.date).start.localeCompare(parts(b.date).start)||a.title.localeCompare(b.title,"es"));
     }
 
+    // AHORA EL CALENDARIO TOMA LOS MISMOS FILTROS DE `filtered()` ADEMÁS DE EXCLUIR VENCIDAS/COMPLETADAS
     function activeCalendarRecords() {
       const hoy = iso(new Date());
-      return backendRecords.filter(r => {
+      const baseFiltered = filtered();
+      return baseFiltered.filter(r => {
         const p = parts(r.date);
         return p.end >= hoy && r.status !== "Completado";
       });
@@ -410,7 +410,7 @@
       if (!contenedor) return;
       contenedor.innerHTML = "";
 
-      const baseDate = new Date(2026, 9, 26);
+      const baseDate = new Date(2026, 9, 29);
       const activeFiltered = activeCalendarRecords();
       
       for (let i = 1; i <= 5; i++) {
@@ -595,7 +595,6 @@
       });
     }
 
-    // EXPORTACIÓN A WORD PERSONALIZADA (DENTRO DEL RANGO DE FECHAS SELECCIONADO)
     function descargarWordPersonalizado() {
       const incluirPendientes = $("chk-pendientes").checked;
       const categoriasSeleccionadas = Array.from(document.querySelectorAll('input[name="chk-categoria"]:checked')).map(cb => cb.value);
@@ -669,7 +668,6 @@
           const actividadesRango = backendRecords.filter(r => {
             if (r.area !== cat) return false;
             const p = parts(r.date);
-            // Comprueba solapamiento del rango de la actividad con el rango elegido
             return p.start <= fechaHasta && p.end >= fechaDesde;
           }).sort((a,b) => parts(a.date).start.localeCompare(parts(b.date).start));
 
@@ -698,14 +696,13 @@
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `Reporte_${fechaDesdته}_al_${fechaHasta}.doc`;
+      a.download = `Reporte_${fechaDesde}_al_${fechaHasta}.doc`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
     }
 
-    // EXPORTACIÓN A PDF PERSONALIZADA (DENTRO DEL RANGO DE FECHAS SELECCIONADO)
     $("btn-exportar-pdf-custom").onclick = () => {
       const incluirPendientes = $("chk-pendientes").checked;
       const categoriasSeleccionadas = Array.from(document.querySelectorAll('input[name="chk-categoria"]:checked')).map(cb => cb.value);

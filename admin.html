@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel de Carga · Agenda Ministerial</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    .preserve-format {
+      white-space: pre-wrap !important;
+      word-break: break-word;
+    }
+  </style>
+</head>
+<body class="bg-slate-100 font-['DM_Sans'] text-slate-800 p-4 sm:p-8">
+
+  <!-- MODAL DE LOGIN CON CONTRASEÑA -->
+  <div id="login-overlay" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl">
+      <h2 class="text-xl font-bold text-slate-900">Acceso Administrador</h2>
+      <p class="text-xs text-slate-500 mt-1 mb-4">Ingresá la clave de gestión para cargar o editar la agenda.</p>
+      <input id="pass-input" type="password" placeholder="Clave de acceso" class="w-full border border-slate-300 rounded-xl p-3 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+      <button id="login-btn" class="w-full mt-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl text-sm transition">Ingresar al Panel</button>
+      <p id="login-msg" class="text-xs text-red-600 mt-2 text-center hidden">Clave incorrecta.</p>
+    </div>
+  </div>
+
+  <!-- PANEL PRINCIPAL DE CARGA -->
+  <div id="admin-panel" class="max-w-4xl mx-auto space-y-6 hidden">
+    
+    <header class="bg-slate-900 text-white p-6 rounded-2xl flex items-center justify-between shadow-md">
+      <div>
+        <span class="text-xs font-bold text-emerald-400 uppercase tracking-widest">Panel de Carga Externa</span>
+        <h1 class="text-2xl font-bold mt-1">Gestión de Agenda Ministerial</h1>
+      </div>
+      <a href="index.html" target="_blank" class="bg-white/10 hover:bg-white/20 text-white text-xs font-bold px-4 py-2.5 rounded-xl border border-white/20 transition">Ver vista pública ↗</a>
+    </header>
+
+    <!-- FORMULARIO DE REGISTRO -->
+    <section class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+      <h2 id="form-heading" class="text-lg font-bold text-slate-900 mb-4">Agregar o editar actividad</h2>
+      <form id="record-form" class="space-y-4">
+        <input id="record-id" type="hidden">
+        
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-600 mb-1">Fecha inicio</label>
+            <input id="start-date" type="date" required class="w-full border border-slate-300 rounded-xl p-2.5 text-sm">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-600 mb-1">Fecha fin (opcional)</label>
+            <input id="end-date" type="date" class="w-full border border-slate-300 rounded-xl p-2.5 text-sm">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">Título de la Actividad</label>
+          <input id="record-title" required class="w-full border border-slate-300 rounded-xl p-2.5 text-sm" placeholder="Ej: Firma de convenio">
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-600 mb-1">Categoría / Organismo</label>
+            <input id="area" required class="w-full border border-slate-300 rounded-xl p-2.5 text-sm" placeholder="Ej: Veteranos de Malvinas">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-600 mb-1">Localidad</label>
+            <input id="location" class="w-full border border-slate-300 rounded-xl p-2.5 text-sm" placeholder="Ej: Viedma">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-600 mb-1">Horario</label>
+            <input id="time" class="w-full border border-slate-300 rounded-xl p-2.5 text-sm" placeholder="Ej: 09:00 hs">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">Observaciones (mantiene saltos de línea y renglones)</label>
+          <textarea id="description" class="w-full border border-slate-300 rounded-xl p-2.5 text-sm min-h-[120px] preserve-format"></textarea>
+        </div>
+
+        <div class="flex items-center gap-3 pt-2">
+          <button type="submit" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl text-sm transition">Guardar Registro</button>
+          <button id="cancel-edit" type="button" class="hidden bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-4 py-3 rounded-xl text-sm transition">Cancelar</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- ASUNTOS PENDIENTES -->
+    <section class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-lg font-bold text-slate-900">Gestión de Asuntos Pendientes</h2>
+        <button id="add-pending-btn" class="bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold px-3 py-2 rounded-xl transition">+ Nuevo Pendiente</button>
+      </div>
+      <div id="pending-list" class="space-y-3"></div>
+    </section>
+
+    <!-- LISTADO CON EDICIÓN Y BORRADO -->
+    <section class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+      <h2 class="text-lg font-bold text-slate-900 mb-4">Registros cargados</h2>
+      <div id="records-list" class="divide-y divide-slate-100"></div>
+    </section>
+
+  </div>
+
+  <script>
+    const CLAVE_ADMIN = "rn2026";
+    const SUPABASE_URL = 'https://wyvxnzklfvhhzphubjik.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_Y8F-G_AnbvTRT7Z46vNoBQ_2TioQnLq';
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const coloresOrganismos = {
+  "IGPJ": { bg: "#e0f2fe", text: "#0369a1", bar: "#0284c7" },
+  "Registro Civil Movil": { bg: "#ccfbf1", text: "#0f766e", bar: "#14b8a6" },
+  "RPI": { bg: "#ffedd5", text: "#c2410c", bar: "#ea580c" },
+  "Secretaría de Gobierno": { bg: "#f1f5f9", text: "#334155", bar: "#64748b" },
+  "Aniversarios": { bg: "#fce7f3", text: "#be185d", bar: "#db2777" },
+  "Escribanía de Gobierno": { bg: "#f3e8ff", text: "#6b21a8", bar: "#9333ea" },
+  "Comisiones de Fomento": { bg: "#fef3c7", text: "#92400e", bar: "#d97706" },
+  "Municipios": { bg: "#dcfce7", text: "#166534", bar: "#16a34a" },
+  "Gobierno y Asuntos Electorales": { bg: "#e0e7ff", text: "#3730a3", bar: "#4f46e5" },
+  "Veteranos de Malvinas": { bg: "#ecf3e6", text: "#3b5219", bar: "#556b2f" } // Verde Militar / Oliva
+    };
+
+    const $=id=>document.getElementById(id);
+    let records = [], pendientes = [];
+
+    $("login-btn").onclick = () => {
+      if ($("pass-input").value === CLAVE_ADMIN) {
+        $("login-overlay").classList.add("hidden");
+        $("admin-panel").classList.remove("hidden");
+        cargarTodo();
+      } else {
+        $("login-msg").classList.remove("hidden");
+      }
+    };
+
+    async function cargarTodo() {
+      const { data: recs } = await supabaseClient.from('registros_agenda').select('*');
+      if (recs) records = recs;
+
+      const { data: pends } = await supabaseClient.from('registros_pendientes').select('*');
+      if (pends) pendientes = pends;
+
+      renderRegistros();
+      renderPendientes();
+    }
+
+    function renderRegistros() {
+      const box = $("records-list");
+      box.innerHTML = "";
+      records.sort((a,b)=> (b.date||"").localeCompare(a.date||"")).forEach(r => {
+        const div = document.createElement("div");
+        div.className = "py-3 flex items-start justify-between gap-4";
+        div.innerHTML = `
+          <div class="min-w-0 flex-1">
+            <strong class="text-sm font-bold text-slate-900">${r.title}</strong>
+            <p class="text-xs text-slate-500">${r.area} · ${r.location || 'Sin localidad'} · ${r.date}</p>
+            ${r.description ? `<p class="text-xs text-slate-600 preserve-format mt-1 bg-slate-50 p-2 rounded-lg border border-slate-100">${r.description}</p>` : ''}
+          </div>
+          <div class="flex items-center gap-2 shrink-0">
+            <button class="btn-edit bg-sky-100 text-sky-800 text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-sky-200">Editar</button>
+            <button class="btn-del bg-red-100 text-red-800 text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-red-200">Eliminar</button>
+          </div>
+        `;
+        div.querySelector(".btn-edit").onclick = () => {
+          $("record-id").value = r.id;
+          $("start-date").value = (r.date||"").split("|")[0];
+          $("end-date").value = (r.date||"").split("|")[1] || "";
+          $("record-title").value = r.title;
+          $("area").value = r.area;
+          $("location").value = r.location || "";
+          $("time").value = r.time || "";
+          $("description").value = r.description || "";
+          $("cancel-edit").classList.remove("hidden");
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+        div.querySelector(".btn-del").onclick = async () => {
+          if (confirm("¿Eliminar este registro?")) {
+            await supabaseClient.from('registros_agenda').delete().eq('id', r.id);
+            cargarTodo();
+          }
+        };
+        box.appendChild(div);
+      });
+    }
+
+    function renderPendientes() {
+      const box = $("pending-list");
+      box.innerHTML = "";
+      pendientes.forEach((p) => {
+        const div = document.createElement("div");
+        div.className = "flex items-start gap-3 border border-slate-200 p-2.5 rounded-xl bg-slate-50";
+        div.innerHTML = `
+          <input type="checkbox" ${p.completado ? 'checked' : ''} class="chk mt-1.5 h-4 w-4 text-emerald-600 rounded">
+          <textarea class="txt w-full bg-transparent text-sm outline-none resize-y min-h-[40px] preserve-format">${p.texto||''}</textarea>
+          <button class="btn-del text-xs font-bold text-red-600 hover:text-red-800 px-2 mt-1">Borrar</button>
+        `;
+        const txt = div.querySelector(".txt");
+        txt.onblur = async () => {
+          p.texto = txt.value.trim();
+          await supabaseClient.from('registros_pendientes').upsert(p);
+        };
+        const chk = div.querySelector(".chk");
+        chk.onchange = async () => {
+          p.completado = chk.checked;
+          await supabaseClient.from('registros_pendientes').upsert(p);
+        };
+        div.querySelector(".btn-del").onclick = async () => {
+          await supabaseClient.from('registros_pendientes').delete().eq('id', p.id);
+          cargarTodo();
+        };
+        box.appendChild(div);
+      });
+    }
+
+    $("record-form").onsubmit = async (e) => {
+      e.preventDefault();
+      const id = $("record-id").value;
+      const start = $("start-date").value;
+      const end = $("end-date").value || start;
+
+      const item = {
+        id: id || String(Date.now()),
+        date: start === end ? start : `${start}|${end}`,
+        title: $("record-title").value.trim(),
+        area: $("area").value.trim(),
+        location: $("location").value.trim(),
+        time: $("time").value.trim(),
+        description: $("description").value.trim(),
+        status: "Pendiente",
+        priority: "Normal"
+      };
+
+      await supabaseClient.from('registros_agenda').upsert(item);
+      $("record-form").reset();
+      $("record-id").value = "";
+      $("cancel-edit").classList.add("hidden");
+      cargarTodo();
+    };
+
+    $("add-pending-btn").onclick = async () => {
+      const p = { id: String(Date.now()), texto: "Nuevo pendiente", completado: false };
+      await supabaseClient.from('registros_pendientes').upsert(p);
+      cargarTodo();
+    };
+
+    $("cancel-edit").onclick = () => {
+      $("record-form").reset();
+      $("record-id").value = "";
+      $("cancel-edit").classList.add("hidden");
+    };
+  </script>
+</body>
+</html>

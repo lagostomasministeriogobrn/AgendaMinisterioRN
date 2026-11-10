@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Agenda Ministerial · Octubre 2026</title>
+  <title>Agenda Ministerial</title>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Source+Serif+4:wght@600;700&display=swap" rel="stylesheet">
   <style>
     :root{--ink:#13263b;--navy:#0c2d4d;--blue:#1774a7;--sky:#e8f2f7;--paper:#f5f7f8;--line:#d6e0e6;--muted:#587084;--gold:#d7a938;--green:#178d62;--color-1:#76E35B}
@@ -59,10 +59,10 @@
        </svg>
        <div>
         <p class="canva-text mb-1 text-sm font-semibold tracking-wide" style="color: rgb(12, 45, 77); font-weight: 700;">Ministerio de Gobierno y Trabajo · Provincia de Río Negro</p>
-        <h1 class="canva-text serif max-w-3xl font-bold leading-tight" style="color: rgb(12, 45, 77); font-size: 30px;">Agenda Ministerial · Octubre 2026</h1>
+        <h1 id="header-title" class="canva-text serif max-w-3xl font-bold leading-tight" style="color: rgb(12, 45, 77); font-size: 30px;">Agenda Ministerial</h1>
        </div>
       </div>
-      <span class="canva-tag w-fit rounded-full px-4 py-2 text-sm font-bold shadow-sm" style="background: rgb(12, 45, 77); color: rgb(255, 255, 255);">Octubre 2026</span>
+      <span id="header-badge" class="canva-tag w-fit rounded-full px-4 py-2 text-sm font-bold shadow-sm capitalize" style="background: rgb(12, 45, 77); color: rgb(255, 255, 255);"></span>
      </div>
     </div>
    </header>
@@ -98,7 +98,7 @@
       </div>
       <div class="mb-4 flex items-center justify-between gap-3">
        <h3 id="calendar-title" class="serif text-2xl font-bold capitalize"></h3>
-       <button id="october-button" class="canva-button rounded-lg px-3 py-2 text-sm font-bold" type="button" style="background: rgb(12, 45, 77); color: rgb(255, 255, 255);">Ver octubre</button>
+       <button id="today-button" class="canva-button rounded-lg px-3 py-2 text-sm font-bold" type="button" style="background: rgb(12, 45, 77); color: rgb(255, 255, 255);">Ir al mes actual</button>
       </div>
       <div class="calendar mb-2 text-center text-xs font-bold text-slate-500">
        <span>Lun</span><span>Mar</span><span>Mié</span><span>Jue</span><span>Vie</span><span>Sáb</span><span>Dom</span>
@@ -136,11 +136,11 @@
          <div class="grid grid-cols-2 gap-2 bg-slate-800 p-3 rounded-xl border border-slate-700">
            <div>
              <label class="block text-[11px] font-semibold text-slate-300 mb-1" for="report-start-date">Desde la fecha:</label>
-             <input id="report-start-date" type="date" value="2026-10-27" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-emerald-400">
+             <input id="report-start-date" type="date" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-emerald-400">
            </div>
            <div>
              <label class="block text-[11px] font-semibold text-slate-300 mb-1" for="report-end-date">Hasta la fecha:</label>
-             <input id="report-end-date" type="date" value="2026-11-02" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-emerald-400">
+             <input id="report-end-date" type="date" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-emerald-400">
            </div>
          </div>
 
@@ -279,6 +279,14 @@
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     const $=id=>document.getElementById(id);
+
+    const iso=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+    const parseDate=v=>{
+      if(!v) return new Date();
+      const p=v.split("-");
+      return new Date(Number(p[0]), Number(p[1])-1, Number(p[2]||1), 12, 0, 0);
+    };
+
     const coloresOrganismos = {
       "IGPJ": { bg: "#e0f2fe", text: "#0369a1", bar: "#0284c7" },
       "Registro Civil Movil": { bg: "#ccfbf1", text: "#0f766e", bar: "#14b8a6" },
@@ -297,7 +305,10 @@
     const shortFormat=new Intl.DateTimeFormat("es-AR",{day:"2-digit",month:"short",year:"numeric"});
     const dayFormat=new Intl.DateTimeFormat("es-AR",{weekday:"long",day:"numeric",month:"long"});
     
-    let activeMonth=new Date(2026,9,1),selectedDate="2026-10-08";
+    let today = new Date();
+    let activeMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    let selectedDate = iso(today);
+
     let backendRecords = [];
     let backendPendientes = [];
 
@@ -352,12 +363,6 @@
       }
     });
 
-    const iso=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
-    const parseDate=v=>{
-      if(!v) return new Date();
-      const p=v.split("-");
-      return new Date(Number(p[0]), Number(p[1])-1, Number(p[2]||1), 12, 0, 0);
-    };
     const parts=v=>{const p=(v||"").split("|");return{start:p[0]||"",end:p[1]||p[0]||""}};
     const inRange=(r,d)=>{const p=parts(r.date);return p.start<=d&&d<=p.end};
     const dateLabel=r=>{const p=parts(r.date);return p.start===p.end?shortFormat.format(parseDate(p.start)):`${shortFormat.format(parseDate(p.start))} al ${shortFormat.format(parseDate(p.end))}`};
@@ -379,13 +384,13 @@
       }).sort((a,b)=>parts(a.date).start.localeCompare(parts(b.date).start)||a.title.localeCompare(b.title,"es"));
     }
 
-    // AHORA EL CALENDARIO TOMA LOS MISMOS FILTROS DE `filtered()` ADEMÁS DE EXCLUIR VENCIDAS/COMPLETADAS
+    // FILTRA PARA EL CALENDARIO: OCULTA ACTIVIDADES ANTERIORES AL DÍA DE HOY Y LAS COMPLETADAS
     function activeCalendarRecords() {
-      const hoy = iso(new Date());
       const baseFiltered = filtered();
+      const hoyIso = iso(new Date());
       return baseFiltered.filter(r => {
         const p = parts(r.date);
-        return p.end >= hoy && r.status !== "Completado";
+        return p.end >= hoyIso && r.status !== "Completado";
       });
     }
 
@@ -410,7 +415,7 @@
       if (!contenedor) return;
       contenedor.innerHTML = "";
 
-      const baseDate = new Date(2026, 9, 29);
+      const baseDate = new Date();
       const activeFiltered = activeCalendarRecords();
       
       for (let i = 1; i <= 5; i++) {
@@ -475,6 +480,11 @@
       $("month-summary").textContent = monthFormat.format(activeMonth);
       $("total-value").textContent = r.length;
       $("range-value").textContent = r.filter(x => parts(x.date).start !== parts(x.date).end).length;
+      
+      const mesCap = monthFormat.format(activeMonth);
+      const mesCapitalizado = mesCap.charAt(0).toUpperCase() + mesCap.slice(1);
+      $("header-title").textContent = `Agenda Ministerial · ${mesCapitalizado}`;
+      $("header-badge").textContent = mesCapitalizado;
     }
     
     function renderCalendar() {
@@ -856,6 +866,13 @@
     document.addEventListener("DOMContentLoaded", async () => {
       renderLeyenda();
       
+      const hoyStr = iso(new Date());
+      const semanaStr = iso(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000));
+      const inputStart = $("report-start-date");
+      const inputEnd = $("report-end-date");
+      if(inputStart) inputStart.value = hoyStr;
+      if(inputEnd) inputEnd.value = semanaStr;
+
       await cargarDesdeSupabase();
       await cargarPendientesSupabase();
 
@@ -891,7 +908,12 @@
 
       $("previous-month").onclick = () => { activeMonth = new Date(activeMonth.getFullYear(), activeMonth.getMonth() - 1, 1); renderAll(); };
       $("next-month").onclick = () => { activeMonth = new Date(activeMonth.getFullYear(), activeMonth.getMonth() + 1, 1); renderAll(); };
-      $("october-button").onclick = () => { activeMonth = new Date(2026, 9, 1); selectedDate = "2026-10-08"; renderAll(); };
+      
+      $("today-button").onclick = () => { 
+        activeMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1); 
+        selectedDate = iso(new Date());
+        renderAll(); 
+      };
 
       if (window.lucide) lucide.createIcons();
     });

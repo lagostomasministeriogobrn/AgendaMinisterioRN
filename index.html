@@ -629,21 +629,26 @@
         <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
         <head><meta charset='utf-8'><title>Reporte Ministerial</title>
         <style>
-          body { font-family: 'Calibri', Arial, sans-serif; color: #13263b; line-height: 1.5; padding: 20px; }
-          h1 { color: #0c2d4d; font-size: 16pt; margin-bottom: 0px; }
-          h2 { color: #1774a7; font-size: 13pt; margin-top: 15px; border-bottom: 2px solid #1774a7; padding-bottom: 5px; }
-          h3 { color: #0c2d4d; font-size: 11pt; margin-top: 10px; }
-          p { font-size: 11pt; margin-bottom: 8px; }
-          ul { margin-top: 5px; }
-          li { font-size: 11pt; margin-bottom: 6px; }
-          .footer { margin-top: 40px; font-size: 9pt; color: #587084; border-top: 1px solid #d6e0e6; padding-top: 10px; }
+          body { font-family: 'Calibri', Arial, sans-serif; color: #13263b; line-height: 1.4; padding: 20px; font-size: 10pt; }
+          .header-box { background-color: #76E35B; padding: 15px; border-bottom: 2px solid #357ad7; margin-bottom: 20px; }
+          h1 { color: #0c2d4d; font-size: 14pt; margin: 0 0 5px 0; }
+          .subtitle { color: #0c2d4d; font-size: 10pt; font-weight: bold; margin: 0; }
+          .fecha-gen { font-size: 9pt; color: #587084; text-align: right; margin-bottom: 15px; }
+          .section-title { background-color: #0c2d4d; color: #ffffff; font-size: 10pt; font-weight: bold; padding: 6px 10px; margin-top: 20px; margin-bottom: 0; }
+          .cat-title { background-color: #357ad7; color: #ffffff; font-size: 10pt; font-weight: bold; padding: 6px 10px; margin-top: 20px; margin-bottom: 0; }
+          table { width: 100%; border-collapse: collapse; margin-top: 0; margin-bottom: 15px; }
+          th, td { border: 1px solid #d6e0e6; padding: 6px 8px; text-align: left; vertical-align: top; font-size: 9pt; }
+          th { background-color: #f1f5f9; color: #0c2d4d; font-weight: bold; }
+          .footer { margin-top: 30px; font-size: 8pt; color: #587084; text-align: center; border-top: 1px solid #d6e0e6; padding-top: 8px; }
+          .preserve { white-space: pre-wrap; }
         </style>
         </head>
         <body>
-          <h1>MINISTERIO DE GOBIERNO Y TRABAJO</h1>
-          <h2>Reporte Oficial Ministerial · Periodo: ${fechaDesde} al ${fechaHasta}</h2>
-          <p><i>Generado al ${fechaStr} desde la Agenda Oficial de Río Negro.</i></p>
-          <br/>
+          <div class="header-box">
+            <h1>Ministerio de Gobierno y Trabajo</h1>
+            <p class="subtitle">Provincia de Río Negro · Periodo: ${fechaDesde} al ${fechaHasta}</p>
+          </div>
+          <div class="fecha-gen">${fechaStr.toUpperCase()}</div>
       `;
 
       if (incluirPendientes) {
@@ -653,24 +658,52 @@
           return !queryPendientes || texto.includes(queryPendientes);
         });
 
-        contenidoHtml += `<h3>ASUNTOS PENDIENTES${queryPendientes ? ' (Filtrados)' : ''}</h3><ul>`;
+        contenidoHtml += `
+          <div class="section-title">ASUNTOS PENDIENTES AL DÍA DE LA FECHA</div>
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 65%;">Descripción del Asunto</th>
+                <th style="width: 15%;">Estado</th>
+                <th style="width: 20%;">Categoría</th>
+              </tr>
+            </thead>
+            <tbody>
+        `;
+
         if (pendientesExportar.length === 0) {
-          contenidoHtml += `<li>No hay asuntos pendientes registrados con ese criterio.</li>`;
+          contenidoHtml += `<tr><td colspan="3">No hay asuntos pendientes registrados.</td></tr>`;
         } else {
           pendientesExportar.forEach(item => {
-            const estadoStr = item.completado ? '[Completado] ' : '';
-            contenidoHtml += `<li><b>${estadoStr}</b>${item.texto || ''}</li>`;
+            const estadoTexto = item.completado ? 'Completado' : 'Pendiente';
+            const prefijoEstado = item.completado ? '[Completado] ' : '';
+            contenidoHtml += `
+              <tr>
+                <td class="preserve">${prefijoEstado}${item.texto || ''}</td>
+                <td>${estadoTexto}</td>
+                <td>Seguimiento</td>
+              </tr>
+            `;
           });
         }
-        contenidoHtml += `</ul><br/>`;
+        contenidoHtml += `</tbody></table>`;
       }
 
       if (categoriasSeleccionadas.length > 0) {
-        contenidoHtml += `<h3>ACTIVIDADES DE AGENDA OFICIAL POR CATEGORÍA</h3>`;
-        
         categoriasSeleccionadas.forEach(cat => {
-          contenidoHtml += `<h4><b>Organismo / Categoría: ${cat}</b></h4><ul>`;
-          
+          contenidoHtml += `
+            <div class="cat-title">CATEGORÍA: ${cat.toUpperCase()}</div>
+            <table>
+              <thead>
+                <tr>
+                  <th style="width: 30%;">Fecha</th>
+                  <th style="width: 45%;">Actividad / Observaciones</th>
+                  <th style="width: 25%;">Ubicación / Horario</th>
+                </tr>
+              </thead>
+              <tbody>
+          `;
+
           const actividadesRango = backendRecords.filter(r => {
             if (r.area !== cat) return false;
             const p = parts(r.date);
@@ -678,22 +711,24 @@
           }).sort((a,b) => parts(a.date).start.localeCompare(parts(b.date).start));
 
           if (actividadesRango.length === 0) {
-            contenidoHtml += `<li><i>Sin actividades programadas para esta categoría en el periodo seleccionado.</i></li>`;
+            contenidoHtml += `<tr><td colspan="3"><i>Sin actividades programadas para esta categoría en el periodo seleccionado.</i></td></tr>`;
           } else {
             actividadesRango.forEach(act => {
-              contenidoHtml += `<li><b>[${dateLabel(act)}]</b> ${act.title} - ${act.location || 'Sin localidad'}${act.time ? ' · ' + act.time : ''} ${act.description ? ' - ' + act.description : ''}</li>`;
+              contenidoHtml += `
+                <tr>
+                  <td>${dateLabel(act)}</td>
+                  <td class="preserve"><b>${act.title}</b>${act.description ? '<br/>' + act.description : ''}</td>
+                  <td>${act.location || 'Sin localidad'}${act.time ? ' · ' + act.time : ''}</td>
+                </tr>
+              `;
             });
           }
-          contenidoHtml += `</ul><br/>`;
+          contenidoHtml += `</tbody></table>`;
         });
       }
 
       contenidoHtml += `
-          <br/>
-          <h3>Observaciones / Modificaciones:</h3>
-          <p>_________________________________________________________________________________</p>
-          <p>_________________________________________________________________________________</p>
-          <div class="footer">Provincia de Río Negro · Ministerio de Gobierno y Trabajo</div>
+          <div class="footer">Provincia de Río Negro · Generado automáticamente desde la Agenda Ministerial</div>
         </body>
         </html>
       `;

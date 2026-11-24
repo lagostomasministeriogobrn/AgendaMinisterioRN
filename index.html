@@ -74,7 +74,7 @@
      </div>
      <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
       <article class="canva-card card border-t-4 border-t-sky-600 p-4" style="background: rgb(255, 255, 255);">
-       <p class="canva-text text-xs font-bold uppercase tracking-wide" style="color: rgb(88, 112, 132);">Registros del mes</p>
+       <p class="canva-text text-xs font-bold uppercase tracking-wide" style="color: rgb(88, 112, 132);">Registros activos del mes</p>
        <p id="total-value" class="mt-1 text-3xl font-bold">0</p>
       </article>
       <article class="canva-card card border-t-4 border-t-emerald-600 p-4" style="background: rgb(255, 255, 255);">
@@ -197,7 +197,6 @@
         <div><label class="canva-text mb-1 block text-sm font-semibold" for="search-input" style="color: rgb(39, 67, 87);">Buscar actividad</label> <input id="search-input" class="field" type="search" placeholder="Escribí para buscar en todo..."></div>
         <div><label class="canva-text mb-1 block text-sm font-semibold" for="category-filter" style="color: rgb(39, 67, 87);">Categoría</label> <select id="category-filter" class="field"></select></div>
         <div><label class="canva-text mb-1 block text-sm font-semibold" for="location-input" style="color: rgb(39, 67, 87);">Localidad (Búsqueda libre)</label> <input id="location-input" class="field" type="search" placeholder="Ej: Viedma, Bariloche..."></div>
-        <div><label class="canva-text mb-1 block text-sm font-semibold" for="status-filter" style="color: rgb(39, 67, 87);">Estado</label> <select id="status-filter" class="field"> <option value="all">Todos los estados</option> <option value="Pendiente">Pendientes</option> <option value="Completado">Completados</option> </select></div>
        </div>
       </section>
      </aside>
@@ -221,7 +220,7 @@
       <div class="pt-4 border-t border-slate-200">
        <div id="record-list" class="divide-y divide-slate-200"></div>
        <div id="empty-state" class="hidden py-10 text-center">
-        <p class="canva-text text-sm font-medium" style="color: rgb(88, 112, 132);">No hay actividades que coincidan con los filtros seleccionados.</p>
+        <p class="canva-text text-sm font-medium" style="color: rgb(88, 112, 132);">No hay actividades activas que coincidan con los filtros seleccionados.</p>
        </div>
       </div>
      </details>
@@ -339,7 +338,7 @@
       if (!contenedor) return;
       contenedor.innerHTML = "";
 
-      const cats = [...new Set(backendRecords.map(r => r.area).filter(Boolean))].sort((a,b) => a.localeCompare(b,"es"));
+      const cats = [...new Set(backendRecords.filter(r => r.status !== "Completado").map(r => r.area).filter(Boolean))].sort((a,b) => a.localeCompare(b,"es"));
       
       cats.forEach(cat => {
         const label = document.createElement("label");
@@ -368,20 +367,21 @@
     const inRange=(r,d)=>{const p=parts(r.date);return p.start<=d&&d<=p.end};
     const dateLabel=r=>{const p=parts(r.date);return p.start===p.end?shortFormat.format(parseDate(p.start)):`${shortFormat.format(parseDate(p.start))} al ${shortFormat.format(parseDate(p.end))}`};
     
+    // EXCLUYE COMPLETADAS DE TODA LA AGENDA
     function filtered(){
       const q = $("search-input").value.trim().toLocaleLowerCase("es"),
             cat = $("category-filter").value,
-            locQuery = $("location-input").value.trim().toLocaleLowerCase("es"),
-            status = $("status-filter").value;
+            locQuery = $("location-input").value.trim().toLocaleLowerCase("es");
 
       return backendRecords.filter(r=>{
+        if (r.status === "Completado") return false;
+        
         const text=[r.title,r.description,r.area,r.location].join(" ").toLocaleLowerCase("es");
         const locText = (r.location || "").toLocaleLowerCase("es");
 
         return (!q || text.includes(q)) &&
           (!cat || r.area === cat) &&
-          (!locQuery || locText.includes(locQuery)) &&
-          (status === "all" || r.status === status);
+          (!locQuery || locText.includes(locQuery));
       }).sort((a,b)=>parts(a.date).start.localeCompare(parts(b.date).start)||a.title.localeCompare(b.title,"es"));
     }
 
@@ -390,7 +390,7 @@
       const hoyIso = iso(new Date());
       return baseFiltered.filter(r => {
         const p = parts(r.date);
-        return p.end >= hoyIso && r.status !== "Completado";
+        return p.end >= hoyIso;
       });
     }
 
@@ -462,6 +462,7 @@
       const s = iso(new Date(activeMonth.getFullYear(), activeMonth.getMonth(), 1));
       const e = iso(new Date(activeMonth.getFullYear(), activeMonth.getMonth()+1, 0));
       return backendRecords.filter(r => {
+        if (r.status === "Completado") return false;
         const p = parts(r.date);
         return p.start <= e && p.end >= s;
       });
@@ -469,7 +470,7 @@
     
     function renderFilters(){
       const selectCat = $("category-filter"), oldCat = selectCat.value;
-      const cats = [...new Set(backendRecords.map(r => r.area).filter(Boolean))].sort((a,b) => a.localeCompare(b,"es"));
+      const cats = [...new Set(backendRecords.filter(r => r.status !== "Completado").map(r => r.area).filter(Boolean))].sort((a,b) => a.localeCompare(b,"es"));
       selectCat.innerHTML = '<option value="">Todas las categorías</option>';
       cats.forEach(c => { const o = document.createElement("option"); o.value = c; o.textContent = c; selectCat.appendChild(o); });
       selectCat.value = cats.includes(oldCat) ? oldCat : "";
@@ -553,7 +554,7 @@
         row.querySelector(".row-title").textContent = r.title;
         const status = row.querySelector(".row-status");
         status.textContent = r.status || "Pendiente";
-        status.className = `row-status badge ${(r.status || "Pendiente") === "Completado" ? "done" : "pending"}`;
+        status.className = "row-status badge pending";
         const areaBadge = row.querySelector(".row-area");
         areaBadge.textContent = r.area;
         areaBadge.classList.remove("bg-slate-100", "text-slate-700");
@@ -582,6 +583,7 @@
       const queryPendientes = $("search-pendientes") ? $("search-pendientes").value.trim().toLocaleLowerCase("es") : "";
       
       const pendientesFiltrados = backendPendientes.filter(item => {
+        if (item.completado) return false;
         const texto = (item.texto || "").toLocaleLowerCase("es");
         return !queryPendientes || texto.includes(queryPendientes);
       });
@@ -596,7 +598,7 @@
         div.className = "flex items-start gap-3 rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm";
         div.innerHTML = `
           <span class="mt-0.5 h-2 w-2 rounded-full bg-amber-500 shrink-0"></span>
-          <p class="w-full text-slate-800 preserve-format ${item.completado ? 'line-through text-slate-400' : ''}">${item.texto || ''}</p>
+          <p class="w-full text-slate-800 preserve-format">${item.texto || ''}</p>
         `;
         contenedor.appendChild(div);
       });
@@ -655,6 +657,7 @@
       if (incluirPendientes) {
         const queryPendientes = $("search-pendientes") ? $("search-pendientes").value.trim().toLocaleLowerCase("es") : "";
         const pendientesExportar = backendPendientes.filter(item => {
+          if (item.completado) return false;
           const texto = (item.texto || "").toLocaleLowerCase("es");
           return !queryPendientes || texto.includes(queryPendientes);
         });
@@ -676,12 +679,10 @@
           contenidoHtml += `<tr><td colspan="3">No hay asuntos pendientes registrados.</td></tr>`;
         } else {
           pendientesExportar.forEach(item => {
-            const estadoTexto = item.completado ? 'Completado' : 'Pendiente';
-            const prefijoEstado = item.completado ? '[Completado] ' : '';
             contenidoHtml += `
               <tr>
-                <td class="preserve">${prefijoEstado}${item.texto || ''}</td>
-                <td>${estadoTexto}</td>
+                <td class="preserve">${item.texto || ''}</td>
+                <td>Pendiente</td>
                 <td>Seguimiento</td>
               </tr>
             `;
@@ -706,7 +707,7 @@
           `;
 
           const actividadesRango = backendRecords.filter(r => {
-            if (r.area !== cat) return false;
+            if (r.area !== cat || r.status === "Completado") return false;
             const p = parts(r.date);
             return p.start <= fechaHasta && p.end >= fechaDesde;
           }).sort((a,b) => parts(a.date).start.localeCompare(parts(b.date).start));
@@ -801,6 +802,7 @@
 
         const queryPendientes = $("search-pendientes") ? $("search-pendientes").value.trim().toLocaleLowerCase("es") : "";
         const pendientesExportar = backendPendientes.filter(item => {
+          if (item.completado) return false;
           const texto = (item.texto || "").toLocaleLowerCase("es");
           return !queryPendientes || texto.includes(queryPendientes);
         });
@@ -808,8 +810,8 @@
         const pendientesData = pendientesExportar.length === 0 ? 
           [['No hay asuntos pendientes registrados.', '', '']] :
           pendientesExportar.map(item => [
-            (item.completado ? '[Completado] ' : '') + (item.texto || ''),
-            item.completado ? 'Completado' : 'Pendiente',
+            item.texto || '',
+            'Pendiente',
             'Seguimiento'
           ]);
 
@@ -840,7 +842,7 @@
           currentY += 9;
 
           const actividadesRango = backendRecords.filter(r => {
-            if (r.area !== cat) return false;
+            if (r.area !== cat || r.status === "Completado") return false;
             const p = parts(r.date);
             return p.start <= fechaHasta && p.end >= fechaDesde;
           }).sort((a,b) => parts(a.date).start.localeCompare(parts(b.date).start));
@@ -926,14 +928,12 @@
       }
 
       $("category-filter").onchange = renderAll;
-      $("status-filter").onchange = renderAll;
 
       $("clear-filters").onclick = () => {
         searchInput.value = "";
         locationInput.value = "";
         if(searchPendientes) searchPendientes.value = "";
         $("category-filter").value = "";
-        $("status-filter").value = "all";
         renderAll();
         renderPendientes();
       };

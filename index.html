@@ -3,547 +3,951 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pedidos de Informe · Ministerio de Gobierno</title>
+  <title>Agenda Ministerial</title>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Source+Serif+4:wght@600;700&display=swap" rel="stylesheet">
   <style>
-    :root{--ink:#13263b;--navy:#0c2d4d;--blue:#1774a7;--sky:#e8f2f7;--paper:#f5f7f8;--line:#d6e0e6;--muted:#587084;--color-1:#76E35B}
+    :root{--ink:#13263b;--navy:#0c2d4d;--blue:#1774a7;--sky:#e8f2f7;--paper:#f5f7f8;--line:#d6e0e6;--muted:#587084;--gold:#d7a938;--green:#178d62;--color-1:#76E35B}
     *{box-sizing:border-box} body{margin:0;font-family:"DM Sans",sans-serif;color:var(--ink);background:var(--paper)}
-    .serif{font-family:"Source Serif 4",serif}
+    .agenda-shell{width:100%;min-height:100%}.serif{font-family:"Source Serif 4",serif}
     .masthead{background:var(--color-1);position:relative;overflow:hidden}
     .masthead:after{content:"";position:absolute;right:-80px;bottom:-145px;width:340px;height:340px;border:42px solid rgba(12,45,77,.08);border-radius:50%}
     .card{background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:0 8px 20px rgba(18,47,70,.06)}
-    .field{width:100%;border:1px solid #bccbd4;border-radius:10px;padding:9px 12px;background:#fff;color:var(--ink);font:inherit;font-size:14px}
+    .field{width:100%;border:1px solid #bccbd4;border-radius:10px;padding:10px 12px;background:#fff;color:var(--ink);font:inherit}
     .field:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(23,116,167,.13);outline:0}
-    .calendar{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}
-    .day{min-height:66px;border:1px solid #e1e8ec;border-radius:10px;background:#fff;padding:6px;text-align:left;transition:.18s}
+    button{transition:transform .15s ease,filter .15s ease}button:hover:not(:disabled){filter:brightness(.97)}button:active:not(:disabled){transform:translateY(1px)}
+    button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid rgba(12,45,77,.62);outline-offset:2px}
+    .calendar{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}.day{min-height:76px;border:1px solid #e1e8ec;border-radius:10px;background:#fff;padding:6px;text-align:left;transition:.18s}
     .day:hover{border-color:#4995bd;background:#f0f8fb}.day.muted{opacity:.36}.day.selected{border-color:var(--blue);box-shadow:inset 0 0 0 1px var(--blue);background:#e8f4f9}
-    .day-bar{height:4px;border-radius:99px;margin-top:3px}
-    .badge{display:inline-flex;align-items:center;border-radius:99px;padding:3px 10px;font-size:11px;font-weight:700;white-space:nowrap}
-    .preserve-format{white-space:pre-wrap;word-break:break-word}
-    @media(max-width:640px){.day{min-height:52px;padding:4px}}
+    .day-bar{height:3px;border-radius:99px;margin-top:2px}.badge{display:inline-flex;align-items:center;border-radius:99px;padding:4px 9px;font-size:12px;font-weight:700;white-space:nowrap}
+    .pending{background:#fff3d8;color:#805500}.done{background:#dcfce7;color:#166534}.record-card{border-left:4px solid #1774a7}.reveal{animation:reveal .42s ease both}@keyframes reveal{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+    @media(max-width:640px){.day{min-height:57px;padding:4px}.day-count,.calendar-detail{display:none}}
+    .preserve-format { white-space: pre-wrap !important; word-break: break-word; }
   </style>
-  <script src="https://cdn.jsdelivr.net/npm/lucide@0.577.0/dist/umd/lucide.min.js"></script>
-  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.577.0/dist/umd/lucide.min.js" type="text/javascript"></script>
+  <script src="https://cdn.tailwindcss.com/3.4.17" type="text/javascript"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
 </head>
-<body>
-
-  <header class="masthead px-4 py-6 sm:px-7 sm:py-8">
-    <div class="relative z-10 mx-auto max-w-[1440px] flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+<body style="background: rgb(245, 247, 248);">
+  
+  <div class="agenda-shell">
+   <header class="masthead px-4 py-6 sm:px-7 sm:py-8">
+    <div class="relative z-10 mx-auto max-w-7xl">
+     <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div class="flex items-center gap-4">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 100" class="h-14 w-auto rounded-lg shadow-sm">
-          <rect width="100" height="100" fill="#000000"/>
-          <rect x="100" width="140" height="100" fill="#76E35B"/>
-          <text x="123" y="62" fill="#FFFFFF" font-family="Arial, sans-serif" font-weight="bold" font-size="52">RN</text>
-          <g transform="translate(50,50)">
-            <circle cx="0" cy="0" r="34" fill="none" stroke="#000" stroke-width="1"/>
-            <path d="M0,-32 L1.5,-27 L6,-28 L3,-24 L7,-21 L2,-21 L0,-16 L-2,-21 L-7,-21 L-3,-24 L-6,-28 L-1.5,-27 Z" fill="#FFFFFF" transform="rotate(0)"/>
-            <path d="M0,-32 L1.5,-27 L6,-28 L3,-24 L7,-21 L2,-21 L0,-16 L-2,-21 L-7,-21 L-3,-24 L-6,-28 L-1.5,-27 Z" fill="#FFFFFF" transform="rotate(27.69)"/>
-            <path d="M0,-32 L1.5,-27 L6,-28 L3,-24 L7,-21 L2,-21 L0,-16 L-2,-21 L-7,-21 L-3,-24 L-6,-28 L-1.5,-27 Z" fill="#FFFFFF" transform="rotate(55.38)"/>
-            <path d="M0,-32 L1.5,-27 L6,-28 L3,-24 L7,-21 L2,-21 L0,-16 L-2,-21 L-7,-21 L-3,-24 L-6,-28 L-1.5,-27 Z" fill="#FFFFFF" transform="rotate(83.07)"/>
-            <path d="M0,-32 L1.5,-27 L6,-28 L3,-24 L7,-21 L2,-21 L0,-16 L-2,-21 L-7,-21 L-3,-24 L-6,-28 L-1.5,-27 Z" fill="#FFFFFF" transform="rotate(110.76)"/>
-            <path d="M0,-32 L1.5,-27 L6,-28 L3,-24 L7,-21 L2,-21 L0,-16 L-2,-21 L-7,-21 L-3,-24 L-6,-28 L-1.5,-27 Z" fill="#FFFFFF" transform="rotate(138.45)"/>
-            <path d="M0,-32 L1.5,-27 L6,-28 L3,-24 L7,-21 L2,-21 L0,-16 L-2,-21 L-7,-21 L-3,-24 L-6,-28 L-1.5,-27 Z" fill="#FFFFFF" transform="rotate(166.14)"/>
-            <path d="M0,-32 L1.5,-27 L6,-28 L3,-24 L7,-21 L2,-21 L0,-16 L-2,-21 L-7,-21 L-3,-24 L-6,-28 L-1.5,-27 Z" fill="#FFFFFF" transform="rotate(193.83)"/>
-            <path d="M0,-32 L1.5,-27 L6,-28 L3,-24 L7,-21 L2,-21 L0,-16 L-2,-21 L-7,-21 L-3,-24 L-6,-28 L-1.5,-27 Z" fill="#FFFFFF" transform="rotate(221.52)"/>
-            <path d="M0,-32 L1.5,-27 L6,-28 L3,-24 L7,-21 L2,-21 L0,-16 L-2,-21 L-7,-21 L-3,-24 L-6,-28 L-1.5,-27 Z" fill="#FFFFFF" transform="rotate(249.21)"/>
-            <path d="M0,-32 L1.5,-27 L6,-28 L3,-24 L7,-21 L2,-21 L0,-16 L-2,-21 L-7,-21 L-3,-24 L-6,-28 L-1.5,-27 Z" fill="#FFFFFF" transform="rotate(276.90)"/>
-            <path d="M0,-32 L1.5,-27 L6,-28 L3,-24 L7,-21 L2,-21 L0,-16 L-2,-21 L-7,-21 L-3,-24 L-6,-28 L-1.5,-27 Z" fill="#FFFFFF" transform="rotate(304.59)"/>
-            <path d="M0,-32 L1.5,-27 L6,-28 L3,-24 L7,-21 L2,-21 L0,-16 L-2,-21 L-7,-21 L-3,-24 L-6,-28 L-1.5,-27 Z" fill="#FFFFFF" transform="rotate(332.28)"/>
-          </g>
-        </svg>
-        <div>
-          <p class="mb-0.5 text-sm font-bold tracking-wide" style="color: rgb(12, 45, 77);">Ministerio de Gobierno · Provincia de Río Negro</p>
-          <h1 class="serif font-bold leading-tight" style="color: rgb(12, 45, 77); font-size: 28px;">Pedidos de Informe</h1>
-        </div>
+       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 100" class="h-14 w-auto rounded-lg shadow-sm">
+        <rect width="100" height="100" fill="#000000"/>
+        <rect x="100" width="140" height="100" fill="#76E35B"/>
+        <text x="123" y="62" fill="#FFFFFF" font-family="Arial, sans-serif" font-weight="bold" font-size="52">RN</text>
+        <g transform="translate(50,50)">
+          <circle cx="0" cy="0" r="34" fill="none" stroke="#000" stroke-width="1"/>
+          <path d="M0,-32 L1.5,-27 L6,-28 L3,-24 L7,-21 L2,-21 L0,-16 L-2,-21 L-7,-21 L-3,-24 L-6,-28 L-1.5,-27 Z" fill="#FFFFFF" transform="rotate(0)"/>
+          <path d="M0,-32 L1.5,-27 L6,-28 L3,-24 L7,-21 L2,-21 L0,-16 L-2,-21 L-7,-21 L-3,-24 L-6,-28 L-1.5,-27 Z" fill="#FFFFFF" transform="rotate(27.69)"/>
+          <path d="M0,-32 L1.5,-27 L6,-28 L3,-24 L7,-21 L2,-21 L0,-16 L-2,-21 L-7,-21 L-3,-24 L-6,-28 L-1.5,-27 Z" fill="#FFFFFF" transform="rotate(55.38)"/>
+          <path d="M0,-32 L1.5,-27 L6,-28 L3,-24 L7,-21 L2,-21 L0,-16 L-2,-21 L-7,-21 L-3,-24 L-6,-28 L-1.5,-27 Z" fill="#FFFFFF" transform="rotate(83.07)"/>
+          <path d="M0,-32 L1.5,-27 L6,-28 L3,-24 L7,-21 L2,-21 L0,-16 L-2,-21 L-7,-21 L-3,-24 L-6,-28 L-1.5,-27 Z" fill="#FFFFFF" transform="rotate(110.76)"/>
+          <path d="M0,-32 L1.5,-27 L6,-28 L3,-24 L7,-21 L2,-21 L0,-16 L-2,-21 L-7,-21 L-3,-24 L-6,-28 L-1.5,-27 Z" fill="#FFFFFF" transform="rotate(138.45)"/>
+          <path d="M0,-32 L1.5,-27 L6,-28 L3,-24 L7,-21 L2,-21 L0,-16 L-2,-21 L-7,-21 L-3,-24 L-6,-28 L-1.5,-27 Z" fill="#FFFFFF" transform="rotate(166.14)"/>
+          <path d="M0,-32 L1.5,-27 L6,-28 L3,-24 L7,-21 L2,-21 L0,-16 L-2,-21 L-7,-21 L-3,-24 L-6,-28 L-1.5,-27 Z" fill="#FFFFFF" transform="rotate(193.83)"/>
+          <path d="M0,-32 L1.5,-27 L6,-28 L3,-24 L7,-21 L2,-21 L0,-16 L-2,-21 L-7,-21 L-3,-24 L-6,-28 L-1.5,-27 Z" fill="#FFFFFF" transform="rotate(221.52)"/>
+          <path d="M0,-32 L1.5,-27 L6,-28 L3,-24 L7,-21 L2,-21 L0,-16 L-2,-21 L-7,-21 L-3,-24 L-6,-28 L-1.5,-27 Z" fill="#FFFFFF" transform="rotate(249.21)"/>
+          <path d="M0,-32 L1.5,-27 L6,-28 L3,-24 L7,-21 L2,-21 L0,-16 L-2,-21 L-7,-21 L-3,-24 L-6,-28 L-1.5,-27 Z" fill="#FFFFFF" transform="rotate(276.90)"/>
+          <path d="M0,-32 L1.5,-27 L6,-28 L3,-24 L7,-21 L2,-21 L0,-16 L-2,-21 L-7,-21 L-3,-24 L-6,-28 L-1.5,-27 Z" fill="#FFFFFF" transform="rotate(304.59)"/>
+          <path d="M0,-32 L1.5,-27 L6,-28 L3,-24 L7,-21 L2,-21 L0,-16 L-2,-21 L-7,-21 L-3,-24 L-6,-28 L-1.5,-27 Z" fill="#FFFFFF" transform="rotate(332.28)"/>
+        </g>
+       </svg>
+       <div>
+        <p class="canva-text mb-1 text-sm font-semibold tracking-wide" style="color: rgb(12, 45, 77); font-weight: 700;">Ministerio de Gobierno y Trabajo · Provincia de Río Negro</p>
+        <h1 id="header-title" class="canva-text serif max-w-3xl font-bold leading-tight" style="color: rgb(12, 45, 77); font-size: 30px;">Agenda Ministerial</h1>
+       </div>
       </div>
-      <div class="flex items-center gap-3">
-        <a href="admin.html" class="rounded-full bg-white/80 hover:bg-white px-4 py-2 text-xs font-bold text-slate-900 shadow-sm transition">Panel de Carga</a>
-        <span class="rounded-full px-4 py-2 text-sm font-bold shadow-sm" style="background: rgb(12, 45, 77); color: #fff;">2026 / 2027</span>
-      </div>
+      <span id="header-badge" class="canva-tag w-fit rounded-full px-4 py-2 text-sm font-bold shadow-sm" style="background: rgb(12, 45, 77); color: rgb(255, 255, 255);">2026</span>
+     </div>
     </div>
-  </header>
+   </header>
 
-  <main class="mx-auto w-full max-w-[1440px] px-4 py-6 sm:px-7 sm:py-8 space-y-6">
-
-    <!-- TARJETAS RESUMEN -->
-    <section class="grid grid-cols-1 gap-3 sm:grid-cols-3">
-      <article class="card border-t-4 border-t-sky-600 p-4">
-        <p class="text-xs font-bold uppercase tracking-wide text-slate-500">Total de Expedientes</p>
-        <p id="stat-total" class="mt-1 text-3xl font-bold">0</p>
+   <main class="mx-auto w-full max-w-7xl px-4 py-6 sm:px-7 sm:py-8">
+    <section class="mb-6 reveal" aria-labelledby="summary-heading">
+     <div class="mb-3 flex flex-wrap items-center justify-between gap-3">
+      <h2 id="summary-heading" class="canva-text font-bold" style="color: rgb(19, 38, 59); font-size: 24px;">Resumen de actividades cargadas</h2><span id="month-summary" class="text-sm font-semibold text-slate-500"></span>
+     </div>
+     <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+      <article class="canva-card card border-t-4 border-t-sky-600 p-4" style="background: rgb(255, 255, 255);">
+       <p class="canva-text text-xs font-bold uppercase tracking-wide" style="color: rgb(88, 112, 132);">Registros del mes</p>
+       <p id="total-value" class="mt-1 text-3xl font-bold">0</p>
       </article>
-      <article class="card border-t-4 border-t-amber-500 p-4">
-        <p class="text-xs font-bold uppercase tracking-wide text-amber-800">Por finalizar</p>
-        <p id="stat-por-finalizar" class="mt-1 text-3xl font-bold text-amber-700">0</p>
+      <article class="canva-card card border-t-4 border-t-emerald-600 p-4" style="background: rgb(255, 255, 255);">
+       <p class="canva-text text-xs font-bold uppercase tracking-wide" style="color: rgb(21, 86, 54);">Con rango de fechas</p>
+       <p id="range-value" class="mt-1 text-3xl font-bold">0</p>
       </article>
-      <article class="card border-t-4 border-t-rose-600 p-4">
-        <p class="text-xs font-bold uppercase tracking-wide text-rose-800">Vencidos / Próximos (15 días)</p>
-        <p id="stat-alerta" class="mt-1 text-3xl font-bold text-rose-700">0</p>
-      </article>
+     </div>
     </section>
 
-    <!-- BLOQUE PRINCIPAL: TABLA DE PEDIDOS + CALENDARIO -->
-    <div class="grid items-start gap-6 xl:grid-cols-[1.45fr_.55fr]">
+    <div class="grid items-start gap-6 xl:grid-cols-[1.12fr_.88fr]">
+     <section class="canva-panel card reveal p-4 sm:p-6" aria-labelledby="calendar-heading" style="background: rgb(255, 255, 255);">
+      <div class="mb-5 flex items-center justify-between gap-3">
+       <div>
+        <p class="canva-text text-xs font-bold uppercase tracking-widest" style="color: rgb(23, 116, 167);">Planificación</p>
+        <h2 id="calendar-heading" class="canva-text mt-1 font-bold" style="color: rgb(19, 38, 59); font-size: 24px;">Calendario mensual</h2>
+       </div>
+       <div class="flex gap-1">
+        <button id="previous-month" class="rounded-lg border border-slate-300 bg-white p-2" type="button" aria-label="Mes anterior"><i data-lucide="chevron-left"></i></button> 
+        <button id="next-month" class="rounded-lg border border-slate-300 bg-white p-2" type="button" aria-label="Mes siguiente"><i data-lucide="chevron-right"></i></button>
+       </div>
+      </div>
+      <div class="mb-4 flex items-center justify-between gap-3">
+       <h3 id="calendar-title" class="serif text-2xl font-bold capitalize"></h3>
+       <button id="today-button" class="canva-button rounded-lg px-3 py-2 text-sm font-bold" type="button" style="background: rgb(12, 45, 77); color: rgb(255, 255, 255);">Ir al mes actual</button>
+      </div>
+      <div class="calendar mb-2 text-center text-xs font-bold text-slate-500">
+       <span>Lun</span><span>Mar</span><span>Mié</span><span>Jue</span><span>Vie</span><span>Sáb</span><span>Dom</span>
+      </div>
+      <div id="calendar" class="calendar" aria-label="Calendario mensual"></div>
+      <div class="calendar-detail mt-5 border-t border-slate-200 pt-5">
+       <div class="mb-3 flex items-center justify-between gap-3">
+        <h3 id="selected-title" class="font-bold"></h3><span id="selected-count" class="text-xs font-semibold text-slate-500"></span>
+       </div>
+       <div id="selected-list" class="space-y-2"></div>
+      </div>
+     </section>
 
-      <!-- TABLA DE EXPEDIENTES -->
-      <section class="card p-4 sm:p-6 space-y-4">
-        <div class="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <p class="text-xs font-bold uppercase tracking-widest text-sky-700">Seguimiento Legislativo / Administrativo</p>
-            <h2 class="mt-0.5 text-xl font-bold text-slate-900">Listado de Pedidos de Informe</h2>
-          </div>
-          <div class="flex items-center gap-2">
-            <span id="visible-count" class="text-xs font-bold text-slate-500 bg-slate-100 px-2.5 py-1.5 rounded-lg">0 visibles</span>
-            <button id="btn-word" type="button" class="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg text-xs font-bold shadow-sm transition">
-              <i data-lucide="file-text" class="w-3.5 h-3.5"></i> Word
-            </button>
-            <button id="btn-pdf" type="button" class="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2 rounded-lg text-xs font-bold shadow-sm transition">
-              <i data-lucide="download" class="w-3.5 h-3.5"></i> PDF
-            </button>
-          </div>
-        </div>
-
-        <!-- BUSCADOR Y FILTRO POR ÁREA DERIVADA -->
-        <div class="grid grid-cols-1 sm:grid-cols-12 gap-2.5 bg-slate-50 p-3.5 rounded-xl border border-slate-200 items-end">
-          <div class="sm:col-span-5">
-            <label for="filter-search" class="block text-[11px] font-bold uppercase tracking-wide text-slate-500 mb-1">Buscador general</label>
-            <input id="filter-search" class="field" type="search" placeholder="N° Expte, Objeto, Solicitantes...">
-          </div>
-          <div class="sm:col-span-3">
-            <label for="filter-area" class="block text-[11px] font-bold uppercase tracking-wide text-slate-500 mb-1">Filtrar por Área derivada</label>
-            <select id="filter-area" class="field">
-              <option value="">Todas las áreas</option>
-              <option value="igpj">IGPJ</option>
-              <option value="registro civil">Registro Civil</option>
-              <option value="rpi">RPI</option>
-              <option value="codeci">CODECI</option>
-              <option value="gobierno">Gobierno</option>
-              <option value="legales">Legales</option>
-              <option value="secretaría de gobierno">Secretaría de Gobierno</option>
-              <option value="dirección de municipios">Dirección de Municipios</option>
-              <option value="comisiones de fomento">Comisiones de Fomento</option>
-              <option value="veteranos de malvinas">Veteranos de Malvinas</option>
-              <option value="escribanía de gobierno">Escribanía de Gobierno</option>
-            </select>
-          </div>
-          <div class="sm:col-span-2">
-            <label for="filter-estado" class="block text-[11px] font-bold uppercase tracking-wide text-slate-500 mb-1">Estado</label>
-            <select id="filter-estado" class="field">
-              <option value="">Todos</option>
-              <option value="Pendiente">Pendiente</option>
-              <option value="Por finalizar">Por finalizar</option>
-              <option value="Respondido">Respondido</option>
-            </select>
-          </div>
-          <div class="sm:col-span-2">
-            <button id="btn-clear-filters" type="button" class="w-full py-2.5 px-3 rounded-lg border border-slate-300 bg-white hover:bg-slate-100 text-xs font-bold text-slate-700 transition">
-              Limpiar
-            </button>
-          </div>
-        </div>
-
-        <!-- TABLA -->
-        <div class="overflow-x-auto rounded-xl border border-slate-200">
-          <table class="w-full text-left border-collapse text-xs sm:text-sm">
-            <thead>
-              <tr class="bg-slate-900 text-white text-[11px] uppercase tracking-wider">
-                <th class="py-3 px-2.5 font-bold whitespace-nowrap">N° EXPTE</th>
-                <th class="py-3 px-2.5 font-bold min-w-[180px]">Objeto</th>
-                <th class="py-3 px-2.5 font-bold min-w-[140px]">Solicitantes</th>
-                <th class="py-3 px-2.5 font-bold whitespace-nowrap">Fecha ingreso</th>
-                <th class="py-3 px-2.5 font-bold whitespace-nowrap">1er vencimiento</th>
-                <th class="py-3 px-2.5 font-bold whitespace-nowrap">Venc. prórroga</th>
-                <th class="py-3 px-2.5 font-bold whitespace-nowrap">Área derivada</th>
-                <th class="py-3 px-2.5 font-bold whitespace-nowrap">Estado</th>
-                <th class="py-3 px-2.5 font-bold whitespace-nowrap">Fecha respuesta</th>
-                <th class="py-3 px-2.5 font-bold min-w-[180px]">Observaciones</th>
-              </tr>
-            </thead>
-            <tbody id="tabla-pedidos" class="divide-y divide-slate-200 bg-white"></tbody>
-          </table>
-        </div>
-        <p id="empty-msg" class="hidden text-center text-sm text-slate-500 py-6">No se encontraron pedidos con esos filtros.</p>
+     <aside class="space-y-6">
+      <section class="canva-panel card reveal p-4 sm:p-6" aria-labelledby="leyenda-heading" style="background: rgb(255, 255, 255);">
+       <p class="canva-text text-xs font-bold uppercase tracking-widest" style="color: rgb(23, 116, 167);">Referencias</p>
+       <h2 id="leyenda-heading" class="canva-text mt-1 font-bold" style="color: rgb(19, 38, 59); font-size: 20px;">Código de Colores</h2>
+       <div id="leyenda-colores" class="mt-4 flex flex-wrap gap-2"></div>
       </section>
 
-      <!-- CALENDARIO DE VENCIMIENTOS -->
-      <aside class="card p-4 sm:p-5 space-y-4">
-        <div class="flex items-center justify-between">
-          <div>
-            <p class="text-xs font-bold uppercase tracking-widest text-sky-700">Control de Plazos</p>
-            <h2 class="mt-0.5 text-lg font-bold text-slate-900">Vencimientos</h2>
-          </div>
-          <div class="flex gap-1">
-            <button id="prev-month" class="rounded-lg border border-slate-300 bg-white p-1.5 hover:bg-slate-50" type="button"><i data-lucide="chevron-left" class="w-4 h-4"></i></button>
-            <button id="next-month" class="rounded-lg border border-slate-300 bg-white p-1.5 hover:bg-slate-50" type="button"><i data-lucide="chevron-right" class="w-4 h-4"></i></button>
-          </div>
-        </div>
+      <!-- PANEL DE REPORTES A MEDIDA (CERRADO) -->
+      <section class="canva-panel card reveal p-4 sm:p-6 bg-gradient-to-br from-slate-900 to-slate-800 text-white shadow-xl" style="border: none;">
+       <details class="group">
+        <summary class="flex cursor-pointer items-center justify-between list-none select-none pb-1">
+         <div class="flex items-center gap-2">
+           <i data-lucide="sliders" class="w-5 h-5 text-emerald-400"></i>
+           <h3 class="text-base font-bold text-white">Panel de Reportes a Medida</h3>
+         </div>
+         <span class="rounded-full bg-slate-700 p-1.5 text-emerald-300 transition group-open:rotate-180">
+          <i data-lucide="chevron-down" class="h-4 w-4"></i>
+         </span>
+        </summary>
+        
+        <div class="pt-4 border-t border-slate-700 mt-3 space-y-3">
+         <div class="grid grid-cols-2 gap-2 bg-slate-800 p-3 rounded-xl border border-slate-700">
+           <div>
+             <label class="block text-[11px] font-semibold text-slate-300 mb-1" for="report-start-date">Desde la fecha:</label>
+             <input id="report-start-date" type="date" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-emerald-400">
+           </div>
+           <div>
+             <label class="block text-[11px] font-semibold text-slate-300 mb-1" for="report-end-date">Hasta la fecha:</label>
+             <input id="report-end-date" type="date" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-emerald-400">
+           </div>
+         </div>
 
-        <div class="flex items-center justify-between">
-          <h3 id="calendar-title" class="serif text-base font-bold capitalize text-slate-800"></h3>
-          <button id="today-btn" class="rounded-lg px-2.5 py-1.5 text-xs font-bold text-white" style="background: var(--navy);" type="button">Hoy</button>
-        </div>
+         <div class="flex items-center justify-between">
+           <p class="text-xs text-slate-300">Seleccioná bloques y categorías:</p>
+           <button id="btn-toggle-all-cats" type="button" class="text-[11px] bg-slate-700 hover:bg-slate-600 text-emerald-300 px-2.5 py-1 rounded-md font-semibold transition">Desmarcar todo</button>
+         </div>
+         
+         <div class="space-y-2.5 bg-slate-800/90 p-3.5 rounded-xl border border-slate-700 max-h-48 overflow-y-auto" id="panel-checkboxes-container">
+           <label class="flex items-center gap-2.5 text-xs font-bold cursor-pointer text-emerald-300 border-b border-slate-700 pb-2 mb-2">
+             <input type="checkbox" id="chk-pendientes" checked class="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 accent-emerald-500">
+             <span>Asuntos pendientes (con fecha al día)</span>
+           </label>
+           <div id="dynamic-categories-checkboxes" class="space-y-2"></div>
+         </div>
 
-        <div class="calendar text-center text-[11px] font-bold text-slate-500">
-          <span>Lun</span><span>Mar</span><span>Mié</span><span>Jue</span><span>Vie</span><span>Sáb</span><span>Dom</span>
+         <div class="grid grid-cols-2 gap-2.5 pt-1">
+           <button id="btn-exportar-doc-custom" type="button" class="flex items-center justify-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white px-3 py-2.5 rounded-lg text-xs font-bold shadow transition">
+             <i data-lucide="file-text" class="w-4 h-4"></i> Descargar Word
+           </button>
+           <button id="btn-exportar-pdf-custom" type="button" class="flex items-center justify-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2.5 rounded-lg text-xs font-bold shadow transition">
+             <i data-lucide="download" class="w-4 h-4"></i> Descargar PDF
+           </button>
+         </div>
         </div>
-        <div id="calendar-grid" class="calendar"></div>
+       </details>
+      </section>
 
-        <div class="border-t border-slate-200 pt-3">
-          <h4 id="selected-day-title" class="text-xs font-bold uppercase tracking-wide text-slate-500 mb-2"></h4>
-          <div id="selected-day-list" class="space-y-2"></div>
-        </div>
-      </aside>
+      <!-- PRÓXIMOS DÍAS (CERRADO) -->
+      <section class="canva-panel card reveal p-4 sm:p-6" aria-labelledby="proximos-heading" style="background: rgb(255, 255, 255);">
+       <details class="group">
+        <summary class="flex cursor-pointer items-center justify-between list-none select-none">
+         <div>
+          <p class="canva-text text-xs font-bold uppercase tracking-widest" style="color: rgb(23, 116, 167);">Vista rápida</p>
+          <h2 id="proximos-heading" class="canva-text mt-1 font-bold text-lg" style="color: rgb(19, 38, 59);">Próximos días</h2>
+         </div>
+         <span class="rounded-full bg-sky-50 p-2 text-sky-700 transition group-open:rotate-180">
+          <i data-lucide="chevron-down" class="h-4 w-4"></i>
+         </span>
+        </summary>
+        <div id="proximos-dias-list" class="mt-4 space-y-3 pt-2 border-t border-slate-100"></div>
+       </details>
+      </section>
 
+      <section class="canva-panel card reveal p-4 sm:p-6" aria-labelledby="filters-heading" style="background: rgb(255, 255, 255);">
+       <div class="flex items-center justify-between gap-2">
+         <div>
+           <p class="canva-text text-xs font-bold uppercase tracking-widest" style="color: rgb(23, 116, 167);">Consulta rápida</p>
+           <h2 id="filters-heading" class="canva-text mt-1 font-bold" style="color: rgb(19, 38, 59); font-size: 24px;">Buscar y filtrar</h2>
+         </div>
+         <button id="clear-filters" type="button" class="text-xs font-bold text-sky-700 hover:underline bg-sky-50 px-2.5 py-1.5 rounded-lg border border-sky-100">Restablecer</button>
+       </div>
+       <div class="mt-4 space-y-3">
+        <div><label class="canva-text mb-1 block text-sm font-semibold" for="search-input" style="color: rgb(39, 67, 87);">Buscar actividad</label> <input id="search-input" class="field" type="search" placeholder="Escribí para buscar en todo..."></div>
+        <div><label class="canva-text mb-1 block text-sm font-semibold" for="category-filter" style="color: rgb(39, 67, 87);">Categoría</label> <select id="category-filter" class="field"></select></div>
+        <div><label class="canva-text mb-1 block text-sm font-semibold" for="location-input" style="color: rgb(39, 67, 87);">Localidad (Búsqueda libre)</label> <input id="location-input" class="field" type="search" placeholder="Ej: Viedma, Bariloche..."></div>
+        <div><label class="canva-text mb-1 block text-sm font-semibold" for="status-filter" style="color: rgb(39, 67, 87);">Estado</label> <select id="status-filter" class="field"> <option value="all">Todos los estados</option> <option value="Pendiente">Pendientes</option> <option value="Completado">Completados</option> </select></div>
+       </div>
+      </section>
+     </aside>
     </div>
-  </main>
 
-  <footer class="mt-8 px-4 py-5" style="background: var(--color-1);">
-    <p class="mx-auto max-w-[1440px] text-center text-xs font-bold" style="color: rgb(12, 45, 77);">Ministerio de Gobierno · Provincia de Río Negro</p>
-  </footer>
+    <!-- LISTADO DE ACTIVIDADES (CERRADO) -->
+    <section class="canva-panel card mt-6 reveal p-4 sm:p-6" aria-labelledby="list-heading" style="background: rgb(255, 255, 255);">
+     <details class="group">
+      <summary class="flex cursor-pointer items-center justify-between list-none select-none pb-2">
+       <div>
+        <p class="canva-text text-xs font-bold uppercase tracking-widest" style="color: rgb(23, 116, 167);">Seguimiento operativo</p>
+        <h2 id="list-heading" class="canva-text mt-1 font-bold" style="color: rgb(19, 38, 59); font-size: 24px;">Listado de actividades</h2>
+       </div>
+       <div class="flex items-center gap-3">
+        <span id="visible-count" class="rounded-full bg-sky-50 px-3 py-2 text-sm font-bold text-sky-800"></span>
+        <span class="rounded-full bg-sky-50 p-2 text-sky-700 transition group-open:rotate-180">
+         <i data-lucide="chevron-down" class="h-4 w-4"></i>
+        </span>
+       </div>
+      </summary>
+      <div class="pt-4 border-t border-slate-200">
+       <div id="record-list" class="divide-y divide-slate-200"></div>
+       <div id="empty-state" class="hidden py-10 text-center">
+        <p class="canva-text text-sm font-medium" style="color: rgb(88, 112, 132);">No hay actividades que coincidan con los filtros seleccionados.</p>
+       </div>
+      </div>
+     </details>
+    </section>
+
+    <!-- ASUNTOS PENDIENTES (CERRADO) -->
+    <section class="canva-panel card mt-6 reveal p-4 sm:p-6" style="background: rgb(255, 255, 255);">
+     <details class="group">
+      <summary class="flex cursor-pointer items-center justify-between list-none select-none pb-2">
+       <div>
+        <p class="canva-text text-xs font-bold uppercase tracking-widest" style="color: rgb(23, 116, 167);">Notas rápidas</p>
+        <h2 class="canva-text mt-1 font-bold" style="color: rgb(19, 38, 59); font-size: 24px;">
+          Asuntos pendientes <span id="fecha-actual-pendiente" class="text-sm font-normal text-slate-500"></span>
+        </h2>
+       </div>
+       <div class="flex items-center gap-3">
+        <span class="rounded-full bg-sky-50 p-2 text-sky-700 transition group-open:rotate-180">
+         <i data-lucide="chevron-down" class="h-4 w-4"></i>
+        </span>
+       </div>
+      </summary>
+      <div class="pt-4 border-t border-slate-200 space-y-3">
+       <div>
+         <input id="search-pendientes" class="field text-xs" type="search" placeholder="Filtrar asuntos pendientes por palabra clave...">
+       </div>
+       <div id="lista-pendientes" class="space-y-3"></div>
+      </div>
+     </details>
+    </section>
+   </main>
+
+   <footer class="canva-footer mt-4 px-4 py-5" style="background: var(--color-1);">
+    <p class="canva-text mx-auto max-w-7xl text-center text-xs font-medium" style="color: rgb(12, 45, 77); font-weight: 700;">Ministerio de Gobierno y Trabajo · Provincia de Río Negro</p>
+   </footer>
+  </div>
+
+  <template id="record-template">
+   <article class="record-card py-4">
+    <div class="flex flex-col justify-between gap-3 lg:flex-row">
+     <div class="min-w-0 flex-1">
+      <div class="flex flex-wrap items-center gap-2">
+       <h3 class="row-title font-bold"></h3><span class="row-status badge"></span><span class="row-area badge bg-slate-100 text-slate-700"></span>
+      </div>
+      <p class="row-location mt-2 text-sm font-semibold text-slate-700"></p>
+      <p class="row-notes preserve-format mt-1 text-sm leading-relaxed text-slate-600"></p>
+      <p class="row-meta mt-3 text-xs font-medium text-slate-600"></p>
+     </div>
+    </div>
+   </article>
+  </template>
 
   <script>
     const SUPABASE_URL = 'https://wyvxnzklfvhhzphubjik.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_Y8F-G_AnbvTRT7Z46vNoBQ_2TioQnLq';
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    const $ = id => document.getElementById(id);
-    const iso = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
-    const parseDate = v => { const p = v.split("-"); return new Date(Number(p[0]), Number(p[1])-1, Number(p[2]), 12, 0, 0); };
-    const formatFechaArg = v => {
-      if (!v) return "—";
-      const p = v.split("-");
-      if (p.length !== 3) return v;
-      return `${Number(p[2])}/${Number(p[1])}/${p[0]}`;
+    const $=id=>document.getElementById(id);
+
+    const iso=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+    const parseDate=v=>{
+      if(!v) return new Date();
+      const p=v.split("-");
+      return new Date(Number(p[0]), Number(p[1])-1, Number(p[2]||1), 12, 0, 0);
     };
 
-    const SIGLAS_AREA = new Set(["igpj", "rpi", "codeci"]);
-    const CONECTORES_AREA = new Set(["de", "del", "la", "las", "los", "y"]);
-    const formatArea = str => {
-      if (!str) return "";
-      return str.trim().split(/\s+/).map((w, idx) => {
-        const low = w.toLowerCase();
-        if (SIGLAS_AREA.has(low)) return low.toUpperCase();
-        if (idx > 0 && CONECTORES_AREA.has(low)) return low;
-        return low.charAt(0).toUpperCase() + low.slice(1);
-      }).join(" ");
+    const coloresOrganismos = {
+      "IGPJ": { bg: "#e0f2fe", text: "#0369a1", bar: "#0284c7" },
+      "Registro Civil Movil": { bg: "#ccfbf1", text: "#0f766e", bar: "#14b8a6" },
+      "RPI": { bg: "#ffedd5", text: "#c2410c", bar: "#ea580c" },
+      "Secretaría de Gobierno": { bg: "#f1f5f9", text: "#334155", bar: "#64748b" },
+      "Aniversarios de Municipios": { bg: "#fce7f3", text: "#be185d", bar: "#db2777" },
+      "Aniversarios Comisiones de Fomento": { bg: "#fae8ff", text: "#a21caf", bar: "#c084fc" },
+      "Escribanía de Gobierno": { bg: "#f3e8ff", text: "#6b21a8", bar: "#9333ea" },
+      "Comisiones de Fomento": { bg: "#fef3c7", text: "#92400e", bar: "#d97706" },
+      "Municipios": { bg: "#dcfce7", text: "#166534", bar: "#16a34a" },
+      "Gobierno y Asuntos Electorales": { bg: "#e0e7ff", text: "#3730a3", bar: "#4f46e5" },
+      "Veteranos de Malvinas": { bg: "#ecf3e6", text: "#3b5219", bar: "#556b2f" }
     };
-
-    const getVencimientoVigente = r => r.vencimiento_prorroga || r.primer_vencimiento || "";
-
-    const monthFormat = new Intl.DateTimeFormat("es-AR", { month: "long", year: "numeric" });
-    const dayFormat = new Intl.DateTimeFormat("es-AR", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
-
-    let registros = [];
+    const obtenerColor = (area) => coloresOrganismos[area] || { bg: "#f1f5f9", text: "#334155", bar: "#94a3b8" };
+    
+    const monthFormat=new Intl.DateTimeFormat("es-AR",{month:"long",year:"numeric"});
+    const shortFormat=new Intl.DateTimeFormat("es-AR",{day:"2-digit",month:"short",year:"numeric"});
+    const dayFormat=new Intl.DateTimeFormat("es-AR",{weekday:"long",day:"numeric",month:"long"});
+    
     let today = new Date();
     let activeMonth = new Date(today.getFullYear(), today.getMonth(), 1);
     let selectedDate = iso(today);
 
-    const coloresArea = {
-      "igpj": { bg: "#e0f2fe", text: "#0369a1", bar: "#0284c7" },
-      "registro civil": { bg: "#ccfbf1", text: "#0f766e", bar: "#14b8a6" },
-      "rpi": { bg: "#ffedd5", text: "#c2410c", bar: "#ea580c" },
-      "codeci": { bg: "#fef3c7", text: "#92400e", bar: "#d97706" },
-      "gobierno": { bg: "#dcfce7", text: "#166534", bar: "#16a34a" },
-      "legales": { bg: "#e0e7ff", text: "#3730a3", bar: "#4f46e5" },
-      "secretaría de gobierno": { bg: "#f1f5f9", text: "#334155", bar: "#64748b" },
-      "dirección de municipios": { bg: "#dcfce7", text: "#15803d", bar: "#22c55e" },
-      "comisiones de fomento": { bg: "#fef3c7", text: "#b45309", bar: "#f59e0b" },
-      "veteranos de malvinas": { bg: "#ecf3e6", text: "#3b5219", bar: "#556b2f" },
-      "escribanía de gobierno": { bg: "#f3e8ff", text: "#6b21a8", bar: "#9333ea" }
-    };
-    const getAreaStyle = area => coloresArea[(area || "").toLowerCase().trim()] || { bg: "#f1f5f9", text: "#334155", bar: "#0284c7" };
+    let backendRecords = [];
+    let backendPendientes = [];
 
-    const getEstadoBadge = est => {
-      if (est === "Por finalizar") return `<span class="badge bg-amber-100 text-amber-800 border border-amber-300">Por finalizar</span>`;
-      if (est === "Respondido") return `<span class="badge bg-emerald-100 text-emerald-800 border border-emerald-300">Respondido</span>`;
-      return `<span class="badge bg-slate-100 text-slate-600">${est || "Pendiente"}</span>`;
-    };
-
-    async function cargarDatos() {
-      const { data, error } = await supabaseClient.from('pedidos_informe').select('*');
+    async function cargarDesdeSupabase() {
+      const { data, error } = await supabaseClient.from('registros_agenda').select('*');
       if (!error && data) {
-        registros = data;
+        backendRecords = data;
         renderAll();
+        renderizarCheckboxesCategorias();
+      } else {
+        console.error("Error cargando registros de agenda:", error);
       }
     }
 
-    function getFiltrados() {
-      const q = $("filter-search").value.trim().toLowerCase();
-      const area = $("filter-area").value.trim().toLowerCase();
-      const estado = $("filter-estado").value;
-
-      return registros.filter(r => {
-        const textoBuscable = [r.expte, r.objeto, r.solicitantes, r.area_derivada, r.observaciones].join(" ").toLowerCase();
-        const matchText = !q || textoBuscable.includes(q);
-        const matchArea = !area || (r.area_derivada || "").toLowerCase().trim() === area;
-        const matchEstado = !estado || (r.estado || "Pendiente") === estado;
-        return matchText && matchArea && matchEstado;
-      }).sort((a, b) => {
-        const va = getVencimientoVigente(a);
-        const vb = getVencimientoVigente(b);
-        if (!va && !vb) return 0;
-        if (!va) return 1;
-        if (!vb) return -1;
-        return va.localeCompare(vb);
-      });
+    async function cargarPendientesSupabase() {
+      const { data, error } = await supabaseClient.from('registros_pendientes').select('*');
+      if (!error && data) {
+        backendPendientes = data;
+        renderPendientes();
+      } else {
+        console.error("Error cargando pendientes:", error);
+      }
     }
 
-    function renderStats() {
-      $("stat-total").textContent = registros.length;
-      $("stat-por-finalizar").textContent = registros.filter(r => r.estado === "Por finalizar").length;
+    function renderizarCheckboxesCategorias() {
+      const contenedor = $("dynamic-categories-checkboxes");
+      if (!contenedor) return;
+      contenedor.innerHTML = "";
 
-      const limite15 = iso(new Date(Date.now() + 15 * 24 * 60 * 60 * 1000));
-      const alertas = registros.filter(r => {
-        const v = getVencimientoVigente(r);
-        const yaRespondido = r.estado === "Respondido" || Boolean(r.fecha_respuesta);
-        return v && !yaRespondido && v <= limite15;
-      });
-      $("stat-alerta").textContent = alertas.length;
-    }
-
-    function renderTabla() {
-      const tbody = $("tabla-pedidos");
-      const lista = getFiltrados();
-      tbody.innerHTML = "";
-      $("visible-count").textContent = `${lista.length} visibles`;
-      $("empty-msg").classList.toggle("hidden", lista.length > 0);
-
-      const hoyStr = iso(new Date());
-
-      lista.forEach(r => {
-        const tr = document.createElement("tr");
-        tr.className = "hover:bg-slate-50/80 transition align-top";
-
-        const vencVigente = getVencimientoVigente(r);
-        const yaRespondido = r.estado === "Respondido" || Boolean(r.fecha_respuesta);
-        const vencido = vencVigente && vencVigente < hoyStr && !yaRespondido;
-
-        const primerVencClass = (!r.vencimiento_prorroga && vencido)
-          ? "text-rose-700 font-bold"
-          : (r.vencimiento_prorroga ? "text-slate-400 line-through" : "text-slate-700 font-medium");
-
-        const prorrogaClass = (r.vencimiento_prorroga && vencido)
-          ? "text-rose-700 font-bold"
-          : "text-indigo-700 font-bold";
-
-        const areaFormateada = formatArea(r.area_derivada);
-        const areaHtml = areaFormateada
-          ? `<span class="badge" style="background:${getAreaStyle(r.area_derivada).bg};color:${getAreaStyle(r.area_derivada).text}">${areaFormateada}</span>`
-          : `<span class="text-xs text-slate-400">—</span>`;
-
-        tr.innerHTML = `
-          <td class="py-3 px-2.5 font-bold text-slate-900 whitespace-nowrap">${r.expte || '<span class="text-slate-400 font-normal">S/N</span>'}</td>
-          <td class="py-3 px-2.5 text-slate-800 preserve-format">${r.objeto || '<span class="text-slate-400 italic">Sin objeto</span>'}</td>
-          <td class="py-3 px-2.5 text-slate-700 preserve-format">${r.solicitantes || '<span class="text-slate-400">—</span>'}</td>
-          <td class="py-3 px-2.5 whitespace-nowrap text-slate-600">${formatFechaArg(r.fecha_ingreso)}</td>
-          <td class="py-3 px-2.5 whitespace-nowrap ${primerVencClass}">${formatFechaArg(r.primer_vencimiento)}${(!r.vencimiento_prorroga && vencido) ? ' ⚠️' : ''}</td>
-          <td class="py-3 px-2.5 whitespace-nowrap ${r.vencimiento_prorroga ? prorrogaClass : 'text-slate-400'}">${formatFechaArg(r.vencimiento_prorroga)}${(r.vencimiento_prorroga && vencido) ? ' ⚠️' : ''}</td>
-          <td class="py-3 px-2.5 whitespace-nowrap">${areaHtml}</td>
-          <td class="py-3 px-2.5 whitespace-nowrap">${getEstadoBadge(r.estado)}</td>
-          <td class="py-3 px-2.5 whitespace-nowrap text-emerald-800 font-medium">${formatFechaArg(r.fecha_respuesta)}</td>
-          <td class="py-3 px-2.5 text-slate-600 preserve-format text-xs">${r.observaciones || '<span class="text-slate-400">—</span>'}</td>
+      const cats = [...new Set(backendRecords.map(r => r.area).filter(Boolean))].sort((a,b) => a.localeCompare(b,"es"));
+      
+      cats.forEach(cat => {
+        const label = document.createElement("label");
+        label.className = "flex items-center gap-2.5 text-xs font-medium cursor-pointer text-slate-200 hover:text-white transition";
+        label.innerHTML = `
+          <input type="checkbox" name="chk-categoria" value="${cat}" checked class="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 accent-emerald-500">
+          <span>${cat}</span>
         `;
-        tbody.appendChild(tr);
+        contenedor.appendChild(label);
       });
     }
 
-    function renderCalendario() {
+    let todoSeleccionado = true;
+    document.addEventListener("click", (e) => {
+      if (e.target && e.target.id === "btn-toggle-all-cats") {
+        todoSeleccionado = !todoSeleccionado;
+        const chkPendientes = $("chk-pendientes");
+        if (chkPendientes) chkPendientes.checked = todoSeleccionado;
+        const checkboxes = document.querySelectorAll('input[name="chk-categoria"]');
+        checkboxes.forEach(chk => chk.checked = todoSeleccionado);
+        e.target.textContent = todoSeleccionado ? "Desmarcar todo" : "Seleccionar todo";
+      }
+    });
+
+    const parts=v=>{const p=(v||"").split("|");return{start:p[0]||"",end:p[1]||p[0]||""}};
+    const inRange=(r,d)=>{const p=parts(r.date);return p.start<=d&&d<=p.end};
+    const dateLabel=r=>{const p=parts(r.date);return p.start===p.end?shortFormat.format(parseDate(p.start)):`${shortFormat.format(parseDate(p.start))} al ${shortFormat.format(parseDate(p.end))}`};
+    
+    function filtered(){
+      const q = $("search-input").value.trim().toLocaleLowerCase("es"),
+            cat = $("category-filter").value,
+            locQuery = $("location-input").value.trim().toLocaleLowerCase("es"),
+            status = $("status-filter").value;
+
+      return backendRecords.filter(r=>{
+        const text=[r.title,r.description,r.area,r.location].join(" ").toLocaleLowerCase("es");
+        const locText = (r.location || "").toLocaleLowerCase("es");
+
+        return (!q || text.includes(q)) &&
+          (!cat || r.area === cat) &&
+          (!locQuery || locText.includes(locQuery)) &&
+          (status === "all" || r.status === status);
+      }).sort((a,b)=>parts(a.date).start.localeCompare(parts(b.date).start)||a.title.localeCompare(b.title,"es"));
+    }
+
+    function activeCalendarRecords() {
+      const baseFiltered = filtered();
+      const hoyIso = iso(new Date());
+      return baseFiltered.filter(r => {
+        const p = parts(r.date);
+        return p.end >= hoyIso && r.status !== "Completado";
+      });
+    }
+
+    function renderLeyenda() {
+      const box = $("leyenda-colores");
+      if (!box) return;
+      box.innerHTML = "";
+      Object.keys(coloresOrganismos).forEach(org => {
+        const col = coloresOrganismos[org];
+        const badge = document.createElement("span");
+        badge.className = "badge";
+        badge.style.setProperty("background-color", col.bg, "important");
+        badge.style.setProperty("color", col.text, "important");
+        badge.style.setProperty("border", `1px solid ${col.bar}`, "important");
+        badge.textContent = org;
+        box.appendChild(badge);
+      });
+    }
+
+    function renderProximosDias() {
+      const contenedor = $("proximos-dias-list");
+      if (!contenedor) return;
+      contenedor.innerHTML = "";
+
+      const baseDate = new Date();
+      const activeFiltered = activeCalendarRecords();
+      
+      for (let i = 1; i <= 5; i++) {
+        const d = new Date(baseDate);
+        d.setDate(baseDate.getDate() + i);
+        const key = iso(d);
+        const actividadesDia = activeFiltered.filter(r => inRange(r, key));
+
+        const diaBox = document.createElement("div");
+        diaBox.className = "rounded-xl border border-slate-200 bg-slate-50/60 p-3";
+        
+        const fechaStr = dayFormat.format(d);
+        let htmlActividades = "";
+
+        if (actividadesDia.length === 0) {
+          htmlActividades = `<p class='text-xs text-slate-400 italic mt-1'>Sin actividades programadas</p>`;
+        } else {
+          htmlActividades = `<div class="mt-2 space-y-2">` + actividadesDia.map(act => {
+            const col = obtenerColor(act.area);
+            return `
+              <div class="rounded-lg bg-white p-2 border border-slate-100 shadow-sm">
+                <div class="flex items-start justify-between gap-2">
+                  <strong class="text-xs text-slate-800">${act.title}</strong>
+                  <span class="text-[10px] font-bold px-2 py-0.5 rounded-full" style="background-color: ${col.bg}; color: ${col.text};">${act.area}</span>
+                </div>
+                <p class="text-[11px] text-slate-600 preserve-format mt-1">${act.location || 'Sin localidad'}${act.time ? ' · ' + act.time : ''}</p>
+              </div>
+            `;
+          }).join("") + `</div>`;
+        }
+
+        diaBox.innerHTML = `
+          <div class="flex items-center justify-between border-b border-slate-200 pb-1.5">
+            <span class="text-xs font-bold capitalize" style="color: var(--navy);">${fechaStr}</span>
+            <span class="text-[10px] font-semibold bg-sky-100 text-sky-800 px-2 py-0.5 rounded-full">${actividadesDia.length} ${actividadesDia.length === 1 ? 'actividad' : 'actividades'}</span>
+          </div>
+          ${htmlActividades}
+        `;
+        contenedor.appendChild(diaBox);
+      }
+    }
+
+    function monthRecords(){
+      const s = iso(new Date(activeMonth.getFullYear(), activeMonth.getMonth(), 1));
+      const e = iso(new Date(activeMonth.getFullYear(), activeMonth.getMonth()+1, 0));
+      return backendRecords.filter(r => {
+        const p = parts(r.date);
+        return p.start <= e && p.end >= s;
+      });
+    }
+    
+    function renderFilters(){
+      const selectCat = $("category-filter"), oldCat = selectCat.value;
+      const cats = [...new Set(backendRecords.map(r => r.area).filter(Boolean))].sort((a,b) => a.localeCompare(b,"es"));
+      selectCat.innerHTML = '<option value="">Todas las categorías</option>';
+      cats.forEach(c => { const o = document.createElement("option"); o.value = c; o.textContent = c; selectCat.appendChild(o); });
+      selectCat.value = cats.includes(oldCat) ? oldCat : "";
+    }
+
+    function renderSummary(){
+      const r = monthRecords();
+      $("month-summary").textContent = monthFormat.format(activeMonth);
+      $("total-value").textContent = r.length;
+      $("range-value").textContent = r.filter(x => parts(x.date).start !== parts(x.date).end).length;
+      
+      $("header-title").textContent = "Agenda Ministerial";
+    }
+    
+    function renderCalendar() {
       const year = activeMonth.getFullYear(), month = activeMonth.getMonth();
       $("calendar-title").textContent = monthFormat.format(activeMonth);
-      const grid = $("calendar-grid");
-      grid.innerHTML = "";
-
-      const first = new Date(year, month, 1);
-      const offset = (first.getDay() + 6) % 7;
-      const start = new Date(year, month, 1 - offset);
-
+      const box = $("calendar");
+      box.innerHTML = "";
+      const first = new Date(year, month, 1), offset = (first.getDay() + 6) % 7, start = new Date(year, month, 1 - offset);
+      const activeFiltered = activeCalendarRecords();
+      
       for (let i = 0; i < 42; i++) {
         const d = new Date(start);
         d.setDate(start.getDate() + i);
         const key = iso(d);
-        const delDia = registros.filter(r => r.primer_vencimiento === key || r.vencimiento_prorroga === key);
-
-        const btn = document.createElement("button");
-        btn.type = "button";
-        btn.className = "day";
-        if (d.getMonth() !== month) btn.classList.add("muted");
-        if (key === selectedDate) btn.classList.add("selected");
-
-        btn.innerHTML = `<div class="flex items-center justify-between"><strong class="text-xs">${d.getDate()}</strong><span class="text-[10px] font-bold text-sky-700">${delDia.length || ""}</span></div>`;
-
-        delDia.forEach(item => {
-          const bar = document.createElement("div");
-          bar.className = "day-bar";
-          bar.style.backgroundColor = item.vencimiento_prorroga === key ? "#7c3aed" : getAreaStyle(item.area_derivada).bar;
-          btn.appendChild(bar);
+        const allDayItems = activeFiltered.filter(r => inRange(r, key));
+        
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className = "day";
+        if (d.getMonth() !== month) b.classList.add("muted");
+        if (key === selectedDate) b.classList.add("selected");
+        b.setAttribute("aria-label", `${dayFormat.format(d)}, ${allDayItems.length} registros`);
+        
+        const headerDiv = document.createElement("div");
+        headerDiv.className = "flex items-center justify-between";
+        headerDiv.innerHTML = `<strong class="text-xs">${d.getDate()}</strong><span class="day-count text-[10px] text-slate-500">${allDayItems.length || ""}</span>`;
+        b.appendChild(headerDiv);
+        
+        allDayItems.forEach(item => {
+            const barra = document.createElement("div");
+            barra.className = "day-bar";
+            barra.style.setProperty("background-color", obtenerColor(item.area).bar, "important");
+            b.appendChild(barra);
         });
 
-        btn.onclick = () => {
-          selectedDate = key;
-          if (d.getMonth() !== activeMonth.getMonth()) {
-            activeMonth = new Date(d.getFullYear(), d.getMonth(), 1);
-          }
-          renderCalendario();
-          renderDetalleDia();
-        };
-        grid.appendChild(btn);
+        b.onclick = () => { selectedDate = key; if (d.getMonth() !== activeMonth.getMonth()) activeMonth = new Date(d.getFullYear(), d.getMonth(), 1); renderAll(); };
+        box.appendChild(b);
       }
     }
 
-    function renderDetalleDia() {
-      $("selected-day-title").textContent = `Vencimientos · ${dayFormat.format(parseDate(selectedDate))}`;
-      const box = $("selected-day-list");
-      const delDia = registros.filter(r => r.primer_vencimiento === selectedDate || r.vencimiento_prorroga === selectedDate);
+    function renderSelected() {
+      const records = activeCalendarRecords().filter(r => inRange(r, selectedDate)).sort((a, b) => a.title.localeCompare(b.title, "es"));
+      $("selected-title").textContent = dayFormat.format(parseDate(selectedDate));
+      $("selected-count").textContent = `${records.length} ${records.length === 1 ? "actividad" : "actividades"}`;
+      const box = $("selected-list");
       box.innerHTML = "";
+      if (!records.length) { box.innerHTML = "<p class='rounded-lg bg-slate-50 p-3 text-sm text-slate-500'>No hay actividades vigentes para esta fecha.</p>"; return }
+      records.forEach(r => {
+        const item = document.createElement("article");
+        item.className = "rounded-lg border border-slate-200 bg-slate-50 p-3";
+        item.innerHTML = `<div class="flex items-start justify-between gap-3"><strong class="text-sm"></strong><span class="text-xs font-bold text-sky-800"></span></div><p class="mt-1 text-xs text-slate-600"></p><p class="mt-1 text-xs text-slate-500 preserve-format"></p>`;
+        item.querySelector("strong").textContent = r.title;
+        const selSpan = item.querySelector("span");
+        selSpan.textContent = r.area;
+        selSpan.style.setProperty("color", obtenerColor(r.area).bar, "important");
+        item.querySelectorAll("p")[0].textContent = r.location || "Sin localidad";
+        item.querySelectorAll("p")[1].textContent = r.description || "";
+        box.appendChild(item);
+      });
+    }
 
-      if (!delDia.length) {
-        box.innerHTML = `<p class="rounded-lg bg-slate-50 p-3 text-xs text-slate-500">Sin vencimientos para esta fecha.</p>`;
+    function renderList() {
+      const list = $("record-list"), records = filtered();
+      list.innerHTML = "";
+      
+      records.forEach(r => {
+        const row = $("record-template").content.firstElementChild.cloneNode(true);
+        row.dataset.id = r.id;
+        row.querySelector(".row-title").textContent = r.title;
+        const status = row.querySelector(".row-status");
+        status.textContent = r.status || "Pendiente";
+        status.className = `row-status badge ${(r.status || "Pendiente") === "Completado" ? "done" : "pending"}`;
+        const areaBadge = row.querySelector(".row-area");
+        areaBadge.textContent = r.area;
+        areaBadge.classList.remove("bg-slate-100", "text-slate-700");
+        const col = obtenerColor(r.area);
+        areaBadge.style.setProperty("background-color", col.bg, "important");
+        areaBadge.style.setProperty("color", col.text, "important");
+        row.querySelector(".row-location").textContent = r.location || "Sin localidad";
+        row.querySelector(".row-notes").textContent = r.description || "Sin observaciones adicionales.";
+        row.querySelector(".row-meta").textContent = `${dateLabel(r)}${r.time ? ` · ${r.time}` : ""} · Prioridad ${r.priority || 'Normal'}`;
+        list.appendChild(row);
+      });
+
+      $("visible-count").textContent = `${records.length} visibles`;
+      list.classList.toggle("hidden", !records.length);
+      $("empty-state").classList.toggle("hidden", !!records.length);
+    }
+
+    function renderPendientes() {
+      const formatoFechaActual = new Intl.DateTimeFormat("es-AR", { day: "numeric", month: "long", year: "numeric" });
+      $("fecha-actual-pendiente").textContent = `· Al ${formatoFechaActual.format(new Date())}`;
+
+      const contenedor = $("lista-pendientes");
+      if (!contenedor) return;
+      contenedor.innerHTML = "";
+
+      const queryPendientes = $("search-pendientes") ? $("search-pendientes").value.trim().toLocaleLowerCase("es") : "";
+      
+      const pendientesFiltrados = backendPendientes.filter(item => {
+        const texto = (item.texto || "").toLocaleLowerCase("es");
+        return !queryPendientes || texto.includes(queryPendientes);
+      });
+
+      if (pendientesFiltrados.length === 0) {
+        contenedor.innerHTML = "<p class='rounded-lg bg-slate-50 p-3 text-sm text-slate-500'>No hay asuntos pendientes que coincidan con la búsqueda.</p>";
         return;
       }
 
-      delDia.forEach(r => {
-        const esProrroga = r.vencimiento_prorroga === selectedDate;
-        const tipoTag = esProrroga
-          ? `<span class="text-[10px] font-bold px-2 py-0.5 rounded bg-purple-100 text-purple-800">Venc. Prórroga</span>`
-          : `<span class="text-[10px] font-bold px-2 py-0.5 rounded bg-sky-100 text-sky-800">1er Vencimiento</span>`;
-
+      pendientesFiltrados.forEach((item) => {
         const div = document.createElement("div");
-        div.className = "rounded-lg border border-slate-200 bg-slate-50 p-3 space-y-1";
+        div.className = "flex items-start gap-3 rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm";
         div.innerHTML = `
-          <div class="flex items-center justify-between gap-2">
-            <strong class="text-xs text-slate-900">Expte: ${r.expte || 'S/N'}</strong>
-            <div class="flex items-center gap-1">${tipoTag}${getEstadoBadge(r.estado)}</div>
-          </div>
-          <p class="text-xs text-slate-700">${r.objeto || 'Sin objeto'}</p>
-          ${r.solicitantes ? `<p class="text-[11px] text-slate-600">Solicitantes: ${r.solicitantes}</p>` : ''}
-          <p class="text-[11px] font-semibold text-sky-800">Área derivada: ${formatArea(r.area_derivada) || 'Sin derivar'}</p>
+          <span class="mt-0.5 h-2 w-2 rounded-full bg-amber-500 shrink-0"></span>
+          <p class="w-full text-slate-800 preserve-format ${item.completado ? 'line-through text-slate-400' : ''}">${item.texto || ''}</p>
         `;
-        box.appendChild(div);
+        contenedor.appendChild(div);
       });
     }
 
-    // EXPORTAR WORD
-    $("btn-word").onclick = () => {
-      const lista = getFiltrados();
-      let rows = lista.map(r => `
-        <tr>
-          <td>${r.expte || ''}</td>
-          <td>${r.objeto || ''}</td>
-          <td>${r.solicitantes || ''}</td>
-          <td>${formatFechaArg(r.fecha_ingreso) === '—' ? '' : formatFechaArg(r.fecha_ingreso)}</td>
-          <td>${formatFechaArg(r.primer_vencimiento) === '—' ? '' : formatFechaArg(r.primer_vencimiento)}</td>
-          <td>${formatFechaArg(r.vencimiento_prorroga) === '—' ? '' : formatFechaArg(r.vencimiento_prorroga)}</td>
-          <td>${formatArea(r.area_derivada)}</td>
-          <td>${r.estado || ''}</td>
-          <td>${formatFechaArg(r.fecha_respuesta) === '—' ? '' : formatFechaArg(r.fecha_respuesta)}</td>
-          <td>${r.observaciones || ''}</td>
-        </tr>
-      `).join("");
+    function descargarWordPersonalizado() {
+      const incluirPendientes = $("chk-pendientes").checked;
+      const categoriasSeleccionadas = Array.from(document.querySelectorAll('input[name="chk-categoria"]:checked')).map(cb => cb.value);
+      const fechaDesde = $("report-start-date").value;
+      const fechaHasta = $("report-end-date").value;
 
-      const html = `
+      if (!fechaDesde || !fechaHasta) {
+        alert("Por favor, seleccioná el rango de fechas (Desde y Hasta).");
+        return;
+      }
+
+      if (fechaDesde > fechaHasta) {
+        alert("La fecha de inicio no puede ser posterior a la fecha de fin.");
+        return;
+      }
+
+      if (!incluirPendientes && categoriasSeleccionadas.length === 0) {
+        alert("Por favor, seleccioná al menos los asuntos pendientes o alguna categoría.");
+        return;
+      }
+
+      const formatoFechaActual = new Intl.DateTimeFormat("es-AR", { day: "numeric", month: "long", year: "numeric" });
+      let fechaStr = formatoFechaActual.format(new Date());
+
+      let contenidoHtml = `
         <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
-        <head><meta charset='utf-8'><style>
-          @page { size: landscape; margin: 1.5cm; }
-          body { font-family: Calibri, Arial, sans-serif; font-size: 9pt; }
-          h2 { color: #0c2d4d; }
-          table { width: 100%; border-collapse: collapse; }
-          th, td { border: 1px solid #000; padding: 5px 6px; text-align: left; vertical-align: top; }
-          th { background-color: #e2e8f0; font-weight: bold; text-align: center; }
-        </style></head>
+        <head><meta charset='utf-8'><title>Reporte Ministerial</title>
+        <style>
+          body { font-family: 'Calibri', Arial, sans-serif; color: #13263b; line-height: 1.4; padding: 20px; font-size: 10pt; }
+          .header-box { background-color: #76E35B; padding: 15px; border-bottom: 2px solid #357ad7; margin-bottom: 20px; }
+          h1 { color: #0c2d4d; font-size: 14pt; margin: 0 0 5px 0; }
+          .subtitle { color: #0c2d4d; font-size: 10pt; font-weight: bold; margin: 0; }
+          .fecha-gen { font-size: 9pt; color: #587084; text-align: right; margin-bottom: 15px; }
+          .section-title { background-color: #0c2d4d; color: #ffffff; font-size: 10pt; font-weight: bold; padding: 6px 10px; margin-top: 20px; margin-bottom: 0; }
+          .cat-title { background-color: #357ad7; color: #ffffff; font-size: 10pt; font-weight: bold; padding: 6px 10px; margin-top: 20px; margin-bottom: 0; }
+          table { width: 100%; border-collapse: collapse; margin-top: 0; margin-bottom: 15px; }
+          th, td { border: 1px solid #d6e0e6; padding: 6px 8px; text-align: left; vertical-align: top; font-size: 9pt; }
+          th { background-color: #f1f5f9; color: #0c2d4d; font-weight: bold; }
+          .footer { margin-top: 30px; font-size: 8pt; color: #587084; text-align: center; border-top: 1px solid #d6e0e6; padding-top: 8px; }
+          .preserve { white-space: pre-wrap; }
+        </style>
+        </head>
         <body>
-          <h2>Ministerio de Gobierno · Pedidos de Informe</h2>
+          <div class="header-box">
+            <h1>Ministerio de Gobierno y Trabajo</h1>
+            <p class="subtitle">Provincia de Río Negro · Periodo: ${fechaDesde} al ${fechaHasta}</p>
+          </div>
+          <div class="fecha-gen">${fechaStr.toUpperCase()}</div>
+      `;
+
+      if (incluirPendientes) {
+        const queryPendientes = $("search-pendientes") ? $("search-pendientes").value.trim().toLocaleLowerCase("es") : "";
+        const pendientesExportar = backendPendientes.filter(item => {
+          const texto = (item.texto || "").toLocaleLowerCase("es");
+          return !queryPendientes || texto.includes(queryPendientes);
+        });
+
+        contenidoHtml += `
+          <div class="section-title">ASUNTOS PENDIENTES AL DÍA DE LA FECHA</div>
           <table>
             <thead>
               <tr>
-                <th>N° EXPTE</th>
-                <th>Objeto</th>
-                <th>Solicitantes</th>
-                <th>Fecha ingreso</th>
-                <th>1er vencimiento</th>
-                <th>Vencimiento de prórroga</th>
-                <th>Área derivada</th>
-                <th>Estado</th>
-                <th>Fecha de respuesta</th>
-                <th>Observaciones</th>
+                <th style="width: 65%;">Descripción del Asunto</th>
+                <th style="width: 15%;">Estado</th>
+                <th style="width: 20%;">Categoría</th>
               </tr>
             </thead>
-            <tbody>${rows}</tbody>
-          </table>
-        </body></html>
+            <tbody>
+        `;
+
+        if (pendientesExportar.length === 0) {
+          contenidoHtml += `<tr><td colspan="3">No hay asuntos pendientes registrados.</td></tr>`;
+        } else {
+          pendientesExportar.forEach(item => {
+            const estadoTexto = item.completado ? 'Completado' : 'Pendiente';
+            const prefijoEstado = item.completado ? '[Completado] ' : '';
+            contenidoHtml += `
+              <tr>
+                <td class="preserve">${prefijoEstado}${item.texto || ''}</td>
+                <td>${estadoTexto}</td>
+                <td>Seguimiento</td>
+              </tr>
+            `;
+          });
+        }
+        contenidoHtml += `</tbody></table>`;
+      }
+
+      if (categoriasSeleccionadas.length > 0) {
+        categoriasSeleccionadas.forEach(cat => {
+          contenidoHtml += `
+            <div class="cat-title">CATEGORÍA: ${cat.toUpperCase()}</div>
+            <table>
+              <thead>
+                <tr>
+                  <th style="width: 30%;">Fecha</th>
+                  <th style="width: 45%;">Actividad / Observaciones</th>
+                  <th style="width: 25%;">Ubicación / Horario</th>
+                </tr>
+              </thead>
+              <tbody>
+          `;
+
+          const actividadesRango = backendRecords.filter(r => {
+            if (r.area !== cat) return false;
+            const p = parts(r.date);
+            return p.start <= fechaHasta && p.end >= fechaDesde;
+          }).sort((a,b) => parts(a.date).start.localeCompare(parts(b.date).start));
+
+          if (actividadesRango.length === 0) {
+            contenidoHtml += `<tr><td colspan="3"><i>Sin actividades programadas para esta categoría en el periodo seleccionado.</i></td></tr>`;
+          } else {
+            actividadesRango.forEach(act => {
+              contenidoHtml += `
+                <tr>
+                  <td>${dateLabel(act)}</td>
+                  <td class="preserve"><b>${act.title}</b>${act.description ? '<br/>' + act.description : ''}</td>
+                  <td>${act.location || 'Sin localidad'}${act.time ? ' · ' + act.time : ''}</td>
+                </tr>
+              `;
+            });
+          }
+          contenidoHtml += `</tbody></table>`;
+        });
+      }
+
+      contenidoHtml += `
+          <div class="footer">Provincia de Río Negro · Generado automáticamente desde la Agenda Ministerial</div>
+        </body>
+        </html>
       `;
-      const blob = new Blob(['\ufeff' + html], { type: 'application/msword' });
+
+      const blob = new Blob(['\ufeff' + contenidoHtml], { type: 'application/msword' });
+      const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = `Pedidos_Informe_${iso(new Date())}.doc`;
+      a.href = url;
+      a.download = `Reporte_${fechaDesde}_al_${fechaHasta}.doc`;
+      document.body.appendChild(a);
       a.click();
-    };
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
 
-    // EXPORTAR PDF
-    $("btn-pdf").onclick = () => {
+    $("btn-exportar-pdf-custom").onclick = () => {
+      const incluirPendientes = $("chk-pendientes").checked;
+      const categoriasSeleccionadas = Array.from(document.querySelectorAll('input[name="chk-categoria"]:checked')).map(cb => cb.value);
+      const fechaDesde = $("report-start-date").value;
+      const fechaHasta = $("report-end-date").value;
+
+      if (!fechaDesde || !fechaHasta) {
+        alert("Por favor, seleccioná el rango de fechas (Desde y Hasta).");
+        return;
+      }
+
+      if (fechaDesde > fechaHasta) {
+        alert("La fecha de inicio no puede ser posterior a la fecha de fin.");
+        return;
+      }
+
+      if (!incluirPendientes && categoriasSeleccionadas.length === 0) {
+        alert("Por favor, seleccioná al menos los asuntos pendientes o alguna categoría.");
+        return;
+      }
+
       const { jsPDF } = window.jspdf;
-      const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+      const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+
       doc.setFillColor(118, 227, 91);
-      doc.rect(0, 0, 297, 20, 'F');
-      doc.setTextColor(12, 45, 77);
-      doc.setFontSize(13);
+      doc.rect(0, 0, 210, 24, 'F');
+      
+      doc.setFillColor(53, 122, 215);
+      doc.rect(0, 24, 210, 2, 'F');
+
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(14);
       doc.setFont("helvetica", "bold");
-      doc.text("Ministerio de Gobierno · Provincia de Río Negro — Pedidos de Informe", 14, 13);
+      doc.text("Ministerio de Gobierno y Trabajo", 14, 12);
 
-      const body = getFiltrados().map(r => [
-        r.expte || '',
-        r.objeto || '',
-        r.solicitantes || '',
-        formatFechaArg(r.fecha_ingreso) === '—' ? '' : formatFechaArg(r.fecha_ingreso),
-        formatFechaArg(r.primer_vencimiento) === '—' ? '' : formatFechaArg(r.primer_vencimiento),
-        formatFechaArg(r.vencimiento_prorroga) === '—' ? '' : formatFechaArg(r.vencimiento_prorroga),
-        formatArea(r.area_derivada),
-        r.estado || '',
-        formatFechaArg(r.fecha_respuesta) === '—' ? '' : formatFechaArg(r.fecha_respuesta),
-        r.observaciones || ''
-      ]);
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "bold");
+      doc.text(`Provincia de Río Negro · Periodo: ${fechaDesde} al ${fechaHasta}`, 14, 18);
 
-      doc.autoTable({
-        startY: 26,
-        margin: { left: 8, right: 8 },
-        head: [['N° EXPTE', 'Objeto', 'Solicitantes', 'Ingreso', '1er Venc.', 'Prórroga', 'Área derivada', 'Estado', 'Respuesta', 'Observaciones']],
-        body,
-        theme: 'grid',
-        headStyles: { fillColor: [12, 45, 77], textColor: [255, 255, 255], fontSize: 7.5 },
-        bodyStyles: { fontSize: 7.5, textColor: [19, 38, 59], cellPadding: 2 }
-      });
+      const formatoFechaActual = new Intl.DateTimeFormat("es-AR", { day: "numeric", month: "long", year: "numeric" });
+      doc.setFontSize(9);
+      doc.text(formatoFechaActual.format(new Date()).toUpperCase(), 196, 15, { align: "right" });
 
-      doc.save(`Pedidos_Informe_${iso(new Date())}.pdf`);
+      let currentY = 33;
+
+      if (incluirPendientes) {
+        doc.setFillColor(12, 45, 77);
+        doc.rect(14, currentY, 182, 7, 'F');
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(9);
+        doc.setFont("helvetica", "bold");
+        doc.text("ASUNTOS PENDIENTES AL DÍA DE LA FECHA", 17, currentY + 5);
+        currentY += 9;
+
+        const queryPendientes = $("search-pendientes") ? $("search-pendientes").value.trim().toLocaleLowerCase("es") : "";
+        const pendientesExportar = backendPendientes.filter(item => {
+          const texto = (item.texto || "").toLocaleLowerCase("es");
+          return !queryPendientes || texto.includes(queryPendientes);
+        });
+
+        const pendientesData = pendientesExportar.length === 0 ? 
+          [['No hay asuntos pendientes registrados.', '', '']] :
+          pendientesExportar.map(item => [
+            (item.completado ? '[Completado] ' : '') + (item.texto || ''),
+            item.completado ? 'Completado' : 'Pendiente',
+            'Seguimiento'
+          ]);
+
+        doc.autoTable({
+          startY: currentY,
+          margin: { left: 14, right: 14 },
+          head: [['Descripción del Asunto', 'Estado', 'Categoría']],
+          body: pendientesData,
+          theme: 'grid',
+          headStyles: { fillColor: [12, 45, 77], textColor: [255, 255, 255], fontSize: 8, fontStyle: 'bold' },
+          bodyStyles: { fontSize: 8, textColor: [19, 38, 59] },
+          styles: { overflow: 'linebreak', cellPadding: 2.5 }
+        });
+
+        currentY = doc.lastAutoTable.finalY + 10;
+      }
+
+      if (categoriasSeleccionadas.length > 0) {
+        categoriasSeleccionadas.forEach(cat => {
+          if (currentY > 240) { doc.addPage(); currentY = 20; }
+
+          doc.setFillColor(53, 122, 215);
+          doc.rect(14, currentY, 182, 7, 'F');
+          doc.setTextColor(255, 255, 255);
+          doc.setFontSize(9);
+          doc.setFont("helvetica", "bold");
+          doc.text(`CATEGORÍA: ${cat.toUpperCase()}`, 17, currentY + 5);
+          currentY += 9;
+
+          const actividadesRango = backendRecords.filter(r => {
+            if (r.area !== cat) return false;
+            const p = parts(r.date);
+            return p.start <= fechaHasta && p.end >= fechaDesde;
+          }).sort((a,b) => parts(a.date).start.localeCompare(parts(b.date).start));
+
+          let catRows = [];
+          actividadesRango.forEach(act => {
+            catRows.push([
+              dateLabel(act),
+              act.title + (act.description ? `\n${act.description}` : ''),
+              `${act.location || 'Sin localidad'}${act.time ? ' · ' + act.time : ''}`
+            ]);
+          });
+
+          if (catRows.length === 0) {
+            doc.setFontSize(8);
+            doc.setFont("helvetica", "italic");
+            doc.setTextColor(150, 150, 150);
+            doc.text("Sin actividades programadas para esta categoría en el periodo seleccionado.", 18, currentY + 3);
+            currentY += 8;
+          } else {
+            doc.autoTable({
+              startY: currentY,
+              margin: { left: 14, right: 14 },
+              head: [['Fecha', 'Actividad / Observaciones', 'Ubicación / Horario']],
+              body: catRows,
+              theme: 'grid',
+              headStyles: { fillColor: [53, 122, 215], textColor: [255, 255, 255], fontSize: 8, fontStyle: 'bold' },
+              bodyStyles: { fontSize: 8, textColor: [19, 38, 59] },
+              columnStyles: { 0: { cellWidth: 40 }, 1: { cellWidth: 92 }, 2: { cellWidth: 50 } },
+              styles: { overflow: 'linebreak', cellPadding: 2 }
+            });
+
+            currentY = doc.lastAutoTable.finalY + 8;
+          }
+        });
+      }
+
+      doc.setFontSize(8);
+      doc.setTextColor(100, 100, 100);
+      doc.text("Provincia de Río Negro · Generado automáticamente desde la Agenda Ministerial", 105, 287, { align: "center" });
+
+      doc.save(`Reporte_${fechaDesde}_al_${fechaHasta}.pdf`);
     };
 
     function renderAll() {
-      renderStats();
-      renderTabla();
-      renderCalendario();
-      renderDetalleDia();
+      renderFilters();
+      renderSummary();
+      renderCalendar();
+      renderSelected();
+      renderList();
+      renderProximosDias();
       if (window.lucide) lucide.createIcons();
     }
 
-    document.addEventListener("DOMContentLoaded", () => {
-      cargarDatos();
-      $("filter-search").addEventListener("input", renderTabla);
-      $("filter-area").addEventListener("change", renderTabla);
-      $("filter-estado").addEventListener("change", renderTabla);
-      $("btn-clear-filters").onclick = () => {
-        $("filter-search").value = "";
-        $("filter-area").value = "";
-        $("filter-estado").value = "";
-        renderTabla();
+    document.addEventListener("DOMContentLoaded", async () => {
+      renderLeyenda();
+      
+      const hoyStr = iso(new Date());
+      const semanaStr = iso(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000));
+      const inputStart = $("report-start-date");
+      const inputEnd = $("report-end-date");
+      if(inputStart) inputStart.value = hoyStr;
+      if(inputEnd) inputEnd.value = semanaStr;
+
+      await cargarDesdeSupabase();
+      await cargarPendientesSupabase();
+
+      $("btn-exportar-doc-custom").onclick = descargarWordPersonalizado;
+
+      const searchInput = $("search-input");
+      const locationInput = $("location-input");
+      const searchPendientes = $("search-pendientes");
+
+      const handleFilterInput = () => {
+        renderAll();
       };
-      $("prev-month").onclick = () => { activeMonth = new Date(activeMonth.getFullYear(), activeMonth.getMonth() - 1, 1); renderCalendario(); };
-      $("next-month").onclick = () => { activeMonth = new Date(activeMonth.getFullYear(), activeMonth.getMonth() + 1, 1); renderCalendario(); };
-      $("today-btn").onclick = () => {
-        activeMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+
+      searchInput.addEventListener("input", handleFilterInput);
+      locationInput.addEventListener("input", handleFilterInput);
+      
+      if (searchPendientes) {
+        searchPendientes.addEventListener("input", renderPendientes);
+      }
+
+      $("category-filter").onchange = renderAll;
+      $("status-filter").onchange = renderAll;
+
+      $("clear-filters").onclick = () => {
+        searchInput.value = "";
+        locationInput.value = "";
+        if(searchPendientes) searchPendientes.value = "";
+        $("category-filter").value = "";
+        $("status-filter").value = "all";
+        renderAll();
+        renderPendientes();
+      };
+
+      $("previous-month").onclick = () => { activeMonth = new Date(activeMonth.getFullYear(), activeMonth.getMonth() - 1, 1); renderAll(); };
+      $("next-month").onclick = () => { activeMonth = new Date(activeMonth.getFullYear(), activeMonth.getMonth() + 1, 1); renderAll(); };
+      
+      $("today-button").onclick = () => { 
+        activeMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1); 
         selectedDate = iso(new Date());
-        renderCalendario();
-        renderDetalleDia();
+        renderAll(); 
       };
+
+      if (window.lucide) lucide.createIcons();
     });
   </script>
 </body>

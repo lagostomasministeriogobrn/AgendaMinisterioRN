@@ -6,7 +6,7 @@
   <title>Agenda Ministerial</title>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Source+Serif+4:wght@600;700&display=swap" rel="stylesheet">
   <style>
-    :root{--ink:#13263b;--navy:#0c2d4d;--blue:#1774a7;--sky:#e8f2f7;--paper:#f5f7f8;--line:#d6e0e6;--muted:#587084;--gold:#d7a938;--green:#178d62;--color-1:#76E35B}
+    :root{--ink:#13263b;--navy:#0c2d4d;--blue:#1774a7;--sky:#e8f2f7;--paper:#f5f7f8;--line:#d6e0e6;--muted:#587084;--gold:#d7a938;--green:#178d62;--color-1:#76E35B;--rnblue:#0063BE}
     *{box-sizing:border-box} body{margin:0;font-family:"DM Sans",sans-serif;color:var(--ink);background:var(--paper)}
     .serif{font-family:"Source Serif 4",serif}
     .masthead{background:var(--color-1);position:relative;overflow:hidden}
@@ -23,101 +23,56 @@
     @media(max-width:640px){.day{min-height:57px;padding:4px}.day-count,.calendar-detail{display:none}}
     .preserve-format { white-space: pre-wrap !important; word-break: break-word; }
 
-    /* Contenedor principal con entrada suave */
-    .agenda-shell {
-      width: 100%;
-      min-height: 100%;
+    /* Pantalla de bienvenida a pantalla completa */
+    #welcome-overlay {
+      background-color: var(--color-1);
+      border-bottom: 8px solid var(--rnblue);
+      transition: opacity 0.65s cubic-bezier(0.22, 1, 0.36, 1), transform 0.65s cubic-bezier(0.22, 1, 0.36, 1), visibility 0.65s ease;
+      overflow: hidden;
+    }
+    #welcome-overlay::before {
+      content: "";
+      position: absolute;
+      left: -140px;
+      top: -140px;
+      width: 440px;
+      height: 440px;
+      border: 52px solid rgba(12, 45, 77, 0.06);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+    #welcome-overlay::after {
+      content: "";
+      position: absolute;
+      right: -120px;
+      bottom: -160px;
+      width: 520px;
+      height: 520px;
+      border: 62px solid rgba(12, 45, 77, 0.07);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+    #welcome-overlay.fade-out {
       opacity: 0;
-      transform: translateY(10px);
-      transition: opacity 0.9s cubic-bezier(0.22, 1, 0.36, 1), transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
-    }
-    .agenda-shell.is-ready {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    /* Pantalla de bienvenida editorial con franja verde lateral */
-    #welcome-screen {
-      position: fixed;
-      inset: 0;
-      z-index: 9999;
-      background-color: var(--paper);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-      opacity: 1;
-      transition: opacity 0.85s cubic-bezier(0.22, 1, 0.36, 1), visibility 0.85s ease;
-    }
-    #welcome-screen.fade-out {
-      opacity: 0;
+      transform: translateY(-16px);
       visibility: hidden;
       pointer-events: none;
     }
-    .welcome-card {
-      position: relative;
-      width: 100%;
-      max-width: 640px;
-      background: #ffffff;
-      border: 1px solid var(--line);
-      border-radius: 20px;
-      box-shadow: 0 20px 45px rgba(18, 47, 70, 0.08);
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-      padding: 48px 32px 36px 48px;
-      animation: cardEnter 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
-      transition: transform 0.85s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.7s ease;
+    .welcome-content {
+      animation: welcomeEnter 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
     }
-    #welcome-screen.fade-out .welcome-card {
-      transform: translateY(-14px) scale(0.985);
-      opacity: 0;
-    }
-    /* Franja vertical verde Río Negro en el borde izquierdo */
-    .welcome-card::before {
-      content: "";
-      position: absolute;
-      left: 0;
-      top: 0;
-      bottom: 0;
-      width: 16px;
-      background-color: var(--color-1);
-    }
-    @keyframes cardEnter {
-      from { opacity: 0; transform: translateY(16px); }
+    @keyframes welcomeEnter {
+      from { opacity: 0; transform: translateY(18px); }
       to { opacity: 1; transform: translateY(0); }
     }
-    @media (max-width: 640px) {
-      .welcome-card {
-        padding: 36px 22px 28px 34px;
-      }
-      .welcome-card::before {
-        width: 12px;
-      }
-    }
-
-    /* Barrita de progreso verde institucional */
-    .welcome-progress-track {
-      width: 220px;
-      max-width: 100%;
-      height: 4px;
-      background-color: #e6edf1;
-      border-radius: 999px;
-      overflow: hidden;
-      margin-top: 28px;
-    }
-    .welcome-progress-fill {
-      height: 100%;
+    .welcome-bar-fill {
       width: 0%;
-      background-color: var(--color-1);
-      border-radius: 999px;
-      animation: fillProgress 1.45s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      background-color: var(--navy);
+      animation: barLoad 1.35s cubic-bezier(0.22, 1, 0.36, 1) forwards;
     }
-    @keyframes fillProgress {
+    @keyframes barLoad {
       0% { width: 0%; }
-      55% { width: 72%; }
+      65% { width: 78%; }
       100% { width: 100%; }
     }
   </style>
@@ -129,85 +84,91 @@
 </head>
 <body style="background: rgb(245, 247, 248); overflow: hidden;">
 
-  <!-- PORTADA EDITORIAL CON FRANJA VERDE Y LOGO OFICIAL RN -->
-  <div id="welcome-screen" role="status" aria-live="polite" aria-labelledby="welcome-heading">
-    <div class="welcome-card">
-      <!-- Logo oficial de Río Negro -->
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 100" class="h-14 w-auto mb-6 shadow-sm">
-        <rect width="100" height="100" fill="#000000"/>
-        <rect x="100" width="140" height="100" fill="#76E35B"/>
-        <text x="123" y="62" fill="#FFFFFF" font-family="Arial, sans-serif" font-weight="bold" font-size="52">RN</text>
-        <g transform="translate(50,50)">
-          <circle cx="0" cy="0" r="34" fill="none" stroke="#000" stroke-width="1"/>
-          <path d="M0,-32 L1.5,-27 L6,-28 L3,-24 L7,-21 L2,-21 L0,-16 L-2,-21 L-7,-21 L-3,-24 L-6,-28 L-1.5,-27 Z" fill="#FFFFFF" transform="rotate(0)"/>
-          <path d="M0,-32 L1.5,-27 L6,-28 L3,-24 L7,-21 L2,-21 L0,-16 L-2,-21 L-7,-21 L-3,-24 L-6,-28 L-1.5,-27 Z" fill="#FFFFFF" transform="rotate(27.69)"/>
-          <path d="M0,-32 L1.5,-27 L6,-28 L3,-24 L7,-21 L2,-21 L0,-16 L-2,-21 L-7,-21 L-3,-24 L-6,-28 L-1.5,-27 Z" fill="#FFFFFF" transform="rotate(55.38)"/>
-          <path d="M0,-32 L1.5,-27 L6,-28 L3,-24 L7,-21 L2,-21 L0,-16 L-2,-21 L-7,-21 L-3,-24 L-6,-28 L-1.5,-27 Z" fill="#FFFFFF" transform="rotate(83.07)"/>
-          <path d="M0,-32 L1.5,-27 L6,-28 L3,-24 L7,-21 L2,-21 L0,-16 L-2,-21 L-7,-21 L-3,-24 L-6,-28 L-1.5,-27 Z" fill="#FFFFFF" transform="rotate(110.76)"/>
-          <path d="M0,-32 L1.5,-27 L6,-28 L3,-24 L7,-21 L2,-21 L0,-16 L-2,-21 L-7,-21 L-3,-24 L-6,-28 L-1.5,-27 Z" fill="#FFFFFF" transform="rotate(138.45)"/>
-          <path d="M0,-32 L1.5,-27 L6,-28 L3,-24 L7,-21 L2,-21 L0,-16 L-2,-21 L-7,-21 L-3,-24 L-6,-28 L-1.5,-27 Z" fill="#FFFFFF" transform="rotate(166.14)"/>
-          <path d="M0,-32 L1.5,-27 L6,-28 L3,-24 L7,-21 L2,-21 L0,-16 L-2,-21 L-7,-21 L-3,-24 L-6,-28 L-1.5,-27 Z" fill="#FFFFFF" transform="rotate(193.83)"/>
-          <path d="M0,-32 L1.5,-27 L6,-28 L3,-24 L7,-21 L2,-21 L0,-16 L-2,-21 L-7,-21 L-3,-24 L-6,-28 L-1.5,-27 Z" fill="#FFFFFF" transform="rotate(221.52)"/>
-          <path d="M0,-32 L1.5,-27 L6,-28 L3,-24 L7,-21 L2,-21 L0,-16 L-2,-21 L-7,-21 L-3,-24 L-6,-28 L-1.5,-27 Z" fill="#FFFFFF" transform="rotate(249.21)"/>
-          <path d="M0,-32 L1.5,-27 L6,-28 L3,-24 L7,-21 L2,-21 L0,-16 L-2,-21 L-7,-21 L-3,-24 L-6,-28 L-1.5,-27 Z" fill="#FFFFFF" transform="rotate(276.90)"/>
-          <path d="M0,-32 L1.5,-27 L6,-28 L3,-24 L7,-21 L2,-21 L0,-16 L-2,-21 L-7,-21 L-3,-24 L-6,-28 L-1.5,-27 Z" fill="#FFFFFF" transform="rotate(304.59)"/>
-          <path d="M0,-32 L1.5,-27 L6,-28 L3,-24 L7,-21 L2,-21 L0,-16 L-2,-21 L-7,-21 L-3,-24 L-6,-28 L-1.5,-27 Z" fill="#FFFFFF" transform="rotate(332.28)"/>
-        </g>
-      </svg>
-
-      <p class="text-[11px] sm:text-xs font-bold uppercase tracking-[0.14em]" style="color: var(--muted);">
-        Ministerio de Gobierno y Trabajo · Provincia de Río Negro
-      </p>
-
-      <h1 id="welcome-heading" class="serif mt-2 text-4xl sm:text-5xl font-bold tracking-tight" style="color: var(--navy);">
-        Bienvenido
-      </h1>
-
-      <p class="mt-2.5 text-sm sm:text-base font-medium" style="color: var(--ink);">
-        Agenda Ministerial · Seguimiento Operativo
-      </p>
-
-      <!-- Barra de carga limpia -->
-      <div class="welcome-progress-track" aria-hidden="true">
-        <div class="welcome-progress-fill"></div>
+  <!-- Bienvenida Fullscreen con estética institucional Río Negro -->
+  <div id="welcome-overlay" role="status" aria-live="polite" class="fixed inset-0 z-50 flex flex-col justify-between px-6 py-8 sm:px-12 sm:py-10">
+    <!-- Barra superior institucional -->
+    <div class="relative z-10 flex items-center justify-between w-full max-w-6xl mx-auto">
+      <div class="flex items-center gap-3.5">
+        <div class="flex h-11 w-22 rounded-lg overflow-hidden shadow-md border border-black/15 flex-shrink-0 bg-black">
+          <div class="w-1/2 bg-black flex items-center justify-center px-1">
+            <svg class="w-9 h-9" viewBox="0 0 100 100">
+              <g fill="white">
+                <circle cx="28" cy="22" r="2.5"/><circle cx="38" cy="16" r="2.5"/><circle cx="50" cy="14" r="2.5"/><circle cx="62" cy="16" r="2.5"/><circle cx="72" cy="22" r="2.5"/>
+                <circle cx="78" cy="32" r="2.5"/><circle cx="80" cy="45" r="2.5"/><circle cx="78" cy="58" r="2.5"/><circle cx="72" cy="68" r="2.5"/>
+                <circle cx="62" cy="74" r="2.5"/><circle cx="50" cy="76" r="2.5"/><circle cx="38" cy="74" r="2.5"/><circle cx="28" cy="68" r="2.5"/>
+                <circle cx="22" cy="58" r="2.5"/><circle cx="20" cy="45" r="2.5"/><circle cx="22" cy="32" r="2.5"/>
+              </g>
+            </svg>
+          </div>
+          <div class="w-1/2 flex items-center justify-center px-2" style="background-color: #39C937;">
+            <span class="text-white font-black text-sm tracking-wider">RN</span>
+          </div>
+        </div>
+        <div class="text-left">
+          <span class="block text-[11px] uppercase font-extrabold tracking-widest" style="color: #0c2d4d;">Provincia de Río Negro</span>
+          <span class="block text-xs sm:text-sm font-bold" style="color: #0c2d4d;">Ministerio de Gobierno y Trabajo</span>
+        </div>
       </div>
 
-      <span class="mt-2.5 text-xs font-medium" style="color: var(--muted);">
-        Cargando sistema de gestión...
-      </span>
+      <span class="rounded-full px-4 py-1.5 text-xs sm:text-sm font-bold shadow-sm" style="background-color: #0c2d4d; color: #ffffff;">2026</span>
+    </div>
 
-      <p class="mt-8 text-[11px] font-medium" style="color: var(--muted);">
-        Provincia de Río Negro · República Argentina
-      </p>
+    <!-- Centro a pantalla completa -->
+    <div class="welcome-content relative z-10 flex flex-col items-center text-center max-w-2xl mx-auto my-auto px-4">
+      <div class="flex h-20 w-40 sm:h-24 sm:w-48 rounded-2xl overflow-hidden shadow-xl border-2 border-white/40 mb-7 bg-black">
+        <div class="w-1/2 bg-black flex items-center justify-center">
+          <svg class="w-full h-full p-1" viewBox="0 0 100 100">
+            <g fill="white">
+              <circle cx="28" cy="22" r="2.6"/><circle cx="38" cy="16" r="2.6"/><circle cx="50" cy="14" r="2.6"/><circle cx="62" cy="16" r="2.6"/><circle cx="72" cy="22" r="2.6"/>
+              <circle cx="78" cy="32" r="2.6"/><circle cx="80" cy="45" r="2.6"/><circle cx="78" cy="58" r="2.6"/><circle cx="72" cy="68" r="2.6"/>
+              <circle cx="62" cy="74" r="2.6"/><circle cx="50" cy="76" r="2.6"/><circle cx="38" cy="74" r="2.6"/><circle cx="28" cy="68" r="2.6"/>
+              <circle cx="22" cy="58" r="2.6"/><circle cx="20" cy="45" r="2.6"/><circle cx="22" cy="32" r="2.6"/>
+            </g>
+          </svg>
+        </div>
+        <div class="w-1/2 flex items-center justify-center" style="background-color: #39C937;">
+          <span class="text-white font-black text-2xl sm:text-3xl tracking-wider">RN</span>
+        </div>
+      </div>
+
+      <p class="text-xs sm:text-sm uppercase font-extrabold tracking-[0.2em] mb-2" style="color: #0c2d4d;">Bienvenido</p>
+      <h1 class="serif text-4xl sm:text-6xl font-bold tracking-tight leading-tight" style="color: #0c2d4d;">Agenda Ministerial</h1>
+      <p class="mt-3 text-sm sm:text-base font-semibold max-w-md" style="color: rgba(12, 45, 77, 0.85);">Planificación operativa, seguimiento territorial y actividades vigentes</p>
+
+      <div class="w-full max-w-xs sm:max-w-sm mt-8">
+        <div class="w-full h-2 rounded-full overflow-hidden" style="background-color: rgba(12, 45, 77, 0.16);">
+          <div class="welcome-bar-fill h-full rounded-full"></div>
+        </div>
+        <p class="mt-2.5 text-xs font-bold tracking-wide" style="color: #0c2d4d;">Sincronizando actividades...</p>
+      </div>
+    </div>
+
+    <!-- Pie institucional -->
+    <div class="relative z-10 text-center">
+      <p class="text-xs font-bold tracking-wide" style="color: #0c2d4d;">Gobierno de Río Negro · Sistema de Gestión y Seguimiento</p>
     </div>
   </div>
   
-  <div id="agenda-main-shell" class="agenda-shell">
+  <div id="agenda-main-shell" class="w-full min-h-full">
    <header class="masthead px-4 py-6 sm:px-7 sm:py-8">
     <div class="relative z-10 mx-auto max-w-7xl">
      <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div class="flex items-center gap-4">
-       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 100" class="h-14 w-auto rounded-lg shadow-sm">
-        <rect width="100" height="100" fill="#000000"/>
-        <rect x="100" width="140" height="100" fill="#76E35B"/>
-        <text x="123" y="62" fill="#FFFFFF" font-family="Arial, sans-serif" font-weight="bold" font-size="52">RN</text>
-        <g transform="translate(50,50)">
-          <circle cx="0" cy="0" r="34" fill="none" stroke="#000" stroke-width="1"/>
-          <path d="M0,-32 L1.5,-27 L6,-28 L3,-24 L7,-21 L2,-21 L0,-16 L-2,-21 L-7,-21 L-3,-24 L-6,-28 L-1.5,-27 Z" fill="#FFFFFF" transform="rotate(0)"/>
-          <path d="M0,-32 L1.5,-27 L6,-28 L3,-24 L7,-21 L2,-21 L0,-16 L-2,-21 L-7,-21 L-3,-24 L-6,-28 L-1.5,-27 Z" fill="#FFFFFF" transform="rotate(27.69)"/>
-          <path d="M0,-32 L1.5,-27 L6,-28 L3,-24 L7,-21 L2,-21 L0,-16 L-2,-21 L-7,-21 L-3,-24 L-6,-28 L-1.5,-27 Z" fill="#FFFFFF" transform="rotate(55.38)"/>
-          <path d="M0,-32 L1.5,-27 L6,-28 L3,-24 L7,-21 L2,-21 L0,-16 L-2,-21 L-7,-21 L-3,-24 L-6,-28 L-1.5,-27 Z" fill="#FFFFFF" transform="rotate(83.07)"/>
-          <path d="M0,-32 L1.5,-27 L6,-28 L3,-24 L7,-21 L2,-21 L0,-16 L-2,-21 L-7,-21 L-3,-24 L-6,-28 L-1.5,-27 Z" fill="#FFFFFF" transform="rotate(110.76)"/>
-          <path d="M0,-32 L1.5,-27 L6,-28 L3,-24 L7,-21 L2,-21 L0,-16 L-2,-21 L-7,-21 L-3,-24 L-6,-28 L-1.5,-27 Z" fill="#FFFFFF" transform="rotate(138.45)"/>
-          <path d="M0,-32 L1.5,-27 L6,-28 L3,-24 L7,-21 L2,-21 L0,-16 L-2,-21 L-7,-21 L-3,-24 L-6,-28 L-1.5,-27 Z" fill="#FFFFFF" transform="rotate(166.14)"/>
-          <path d="M0,-32 L1.5,-27 L6,-28 L3,-24 L7,-21 L2,-21 L0,-16 L-2,-21 L-7,-21 L-3,-24 L-6,-28 L-1.5,-27 Z" fill="#FFFFFF" transform="rotate(193.83)"/>
-          <path d="M0,-32 L1.5,-27 L6,-28 L3,-24 L7,-21 L2,-21 L0,-16 L-2,-21 L-7,-21 L-3,-24 L-6,-28 L-1.5,-27 Z" fill="#FFFFFF" transform="rotate(221.52)"/>
-          <path d="M0,-32 L1.5,-27 L6,-28 L3,-24 L7,-21 L2,-21 L0,-16 L-2,-21 L-7,-21 L-3,-24 L-6,-28 L-1.5,-27 Z" fill="#FFFFFF" transform="rotate(249.21)"/>
-          <path d="M0,-32 L1.5,-27 L6,-28 L3,-24 L7,-21 L2,-21 L0,-16 L-2,-21 L-7,-21 L-3,-24 L-6,-28 L-1.5,-27 Z" fill="#FFFFFF" transform="rotate(276.90)"/>
-          <path d="M0,-32 L1.5,-27 L6,-28 L3,-24 L7,-21 L2,-21 L0,-16 L-2,-21 L-7,-21 L-3,-24 L-6,-28 L-1.5,-27 Z" fill="#FFFFFF" transform="rotate(304.59)"/>
-          <path d="M0,-32 L1.5,-27 L6,-28 L3,-24 L7,-21 L2,-21 L0,-16 L-2,-21 L-7,-21 L-3,-24 L-6,-28 L-1.5,-27 Z" fill="#FFFFFF" transform="rotate(332.28)"/>
-        </g>
-       </svg>
+       <div class="flex h-12 w-24 rounded-lg overflow-hidden shadow-sm border border-black/10 flex-shrink-0 bg-black">
+        <div class="w-1/2 bg-black flex items-center justify-center">
+          <svg class="w-full h-full" viewBox="0 0 100 100">
+            <g fill="white">
+              <circle cx="28" cy="22" r="2.3"/><circle cx="38" cy="16" r="2.3"/><circle cx="50" cy="14" r="2.3"/><circle cx="62" cy="16" r="2.3"/><circle cx="72" cy="22" r="2.3"/>
+              <circle cx="78" cy="32" r="2.3"/><circle cx="80" cy="45" r="2.3"/><circle cx="78" cy="58" r="2.3"/><circle cx="72" cy="68" r="2.3"/>
+              <circle cx="62" cy="74" r="2.3"/><circle cx="50" cy="76" r="2.3"/><circle cx="38" cy="74" r="2.3"/><circle cx="28" cy="68" r="2.3"/>
+              <circle cx="22" cy="58" r="2.3"/><circle cx="20" cy="45" r="2.3"/><circle cx="22" cy="32" r="2.3"/>
+            </g>
+          </svg>
+        </div>
+        <div class="w-1/2 flex items-center justify-center" style="background-color: #39C937;">
+          <span class="text-white font-black text-base tracking-wider">RN</span>
+        </div>
+       </div>
        <div>
         <p class="canva-text mb-1 text-sm font-semibold tracking-wide" style="color: rgb(12, 45, 77); font-weight: 700;">Ministerio de Gobierno y Trabajo · Provincia de Río Negro</p>
         <h1 id="header-title" class="canva-text serif max-w-3xl font-bold leading-tight" style="color: rgb(12, 45, 77); font-size: 30px;">Agenda Ministerial</h1>
@@ -467,7 +428,6 @@
     const inRange=(r,d)=>{const p=parts(r.date);return p.start<=d&&d<=p.end};
     const dateLabel=r=>{const p=parts(r.date);return p.start===p.end?shortFormat.format(parseDate(p.start)):`${shortFormat.format(parseDate(p.start))} al ${shortFormat.format(parseDate(p.end))}`};
 
-    // Helper central para saber si un registro está vigente (no completado y con fecha de hoy o futura)
     const isRecordActive = (r) => {
       if (r.status === "Completado") return false;
       const hoyIso = iso(new Date());
@@ -526,7 +486,6 @@
       }
     });
     
-    // EXCLUYE COMPLETADAS Y PASADAS DE TODA LA AGENDA
     function filtered(){
       const q = $("search-input").value.trim().toLocaleLowerCase("es"),
             cat = $("category-filter").value,
@@ -1052,21 +1011,15 @@
     }
 
     document.addEventListener("DOMContentLoaded", async () => {
-      const welcomeScreen = $("welcome-screen");
-      const mainShell = $("agenda-main-shell");
+      const welcomeOverlay = $("welcome-overlay");
 
       const cerrarBienvenida = () => {
-        if (!welcomeScreen || welcomeScreen.classList.contains("fade-out")) return;
-        
-        requestAnimationFrame(() => {
-          welcomeScreen.classList.add("fade-out");
-          if (mainShell) mainShell.classList.add("is-ready");
-        });
-
+        if (!welcomeOverlay || welcomeOverlay.classList.contains("fade-out")) return;
+        welcomeOverlay.classList.add("fade-out");
         setTimeout(() => {
           document.body.style.overflow = "auto";
-          welcomeScreen.style.display = "none";
-        }, 900);
+          welcomeOverlay.style.display = "none";
+        }, 700);
       };
 
       renderLeyenda();
@@ -1078,7 +1031,7 @@
       if(inputStart) inputStart.value = hoyStr;
       if(inputEnd) inputEnd.value = semanaStr;
 
-      const tiempoMinimo = new Promise(resolve => setTimeout(resolve, 1450));
+      const tiempoMinimo = new Promise(resolve => setTimeout(resolve, 1350));
       await Promise.all([
         cargarDesdeSupabase(),
         cargarPendientesSupabase(),

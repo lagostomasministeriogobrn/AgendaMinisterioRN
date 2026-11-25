@@ -16,11 +16,131 @@
     .field:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(23,116,167,.13);outline:0}
     button{transition:transform .15s ease,filter .15s ease}button:hover:not(:disabled){filter:brightness(.97)}button:active:not(:disabled){transform:translateY(1px)}
     button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid rgba(12,45,77,.62);outline-offset:2px}
-    .calendar{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}.day{min-height:76px;border:1px solid #e1e8ec;border-radius:10px;background:#fff;padding:6px;text-align:left;transition:.18s}
-    .day:hover{border-color:#4995bd;background:#f0f8fb}.day.muted{opacity:.36}.day.selected{border-color:var(--blue);box-shadow:inset 0 0 0 1px var(--blue);background:#e8f4f9}
-    .day-bar{height:3px;border-radius:99px;margin-top:2px}.badge{display:inline-flex;align-items:center;border-radius:99px;padding:4px 9px;font-size:12px;font-weight:700;white-space:nowrap}
+
+    /* Calendario mensual con verde institucional más presente */
+    .calendar-panel-green {
+      background: linear-gradient(180deg, rgba(57, 201, 55, 0.14) 0%, #ffffff 34%) !important;
+      border-top: 4px solid #39C937 !important;
+    }
+    .calendar-weekdays-green {
+      background: rgba(57, 201, 55, 0.24);
+      border: 1px solid rgba(57, 201, 55, 0.42);
+      color: #14532d;
+    }
+    .calendar {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      gap: 7px;
+    }
+    .day {
+      min-height: 78px;
+      height: auto;
+      border: 1px solid rgba(57, 201, 55, 0.38);
+      border-radius: 14px;
+      background: linear-gradient(180deg, rgba(57, 201, 55, 0.11) 0%, rgba(57, 201, 55, 0.20) 100%);
+      padding: 7px 8px;
+      text-align: left;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 6px;
+      box-shadow: 0 2px 6px rgba(20, 83, 45, 0.06);
+      transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+    }
+    .day:hover {
+      transform: translateY(-2px);
+      border-color: #28a826;
+      background: linear-gradient(180deg, rgba(57, 201, 55, 0.22) 0%, rgba(57, 201, 55, 0.32) 100%);
+      box-shadow: 0 6px 14px rgba(57, 201, 55, 0.18);
+    }
+    .day.muted {
+      opacity: 0.45;
+      background: rgba(57, 201, 55, 0.05);
+      border-color: rgba(57, 201, 55, 0.14);
+      box-shadow: none;
+    }
+    .day.muted:hover {
+      transform: none;
+      opacity: 0.68;
+    }
+    .day.today {
+      border: 2px solid #28a826;
+      background: linear-gradient(180deg, rgba(57, 201, 55, 0.28) 0%, rgba(57, 201, 55, 0.38) 100%);
+    }
+    .day.selected {
+      border: 2px solid #0063BE;
+      background: linear-gradient(180deg, rgba(57, 201, 55, 0.24) 0%, rgba(0, 99, 190, 0.16) 100%);
+      box-shadow: 0 0 0 2px rgba(0, 99, 190, 0.22), 0 6px 14px rgba(0, 99, 190, 0.12);
+    }
+    .day-bars-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 2.5px;
+      width: 100%;
+    }
+    .day-bar {
+      height: 4.5px;
+      width: 100%;
+      border-radius: 999px;
+      opacity: 0.96;
+    }
+
+    /* Alerta titilante grande y llamativa para actividades de HOY */
+    @keyframes hoyAlertBlink {
+      0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.65), 0 6px 18px rgba(220, 38, 38, 0.35);
+      }
+      50% {
+        opacity: 0.55;
+        transform: scale(1.04);
+        box-shadow: 0 0 0 10px rgba(220, 38, 38, 0), 0 8px 22px rgba(220, 38, 38, 0.15);
+      }
+    }
+    .hoy-alert-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+      color: #ffffff;
+      border: 2.5px solid #fecaca;
+      border-radius: 14px;
+      padding: 8px 20px;
+      font-size: 21px;
+      font-weight: 900;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      line-height: 1;
+      animation: hoyAlertBlink 1.1s ease-in-out infinite;
+    }
+
+    /* Alerta moderada para Asuntos Pendientes (más sutil que HOY) */
+    @keyframes pendientesSoftBlink {
+      0%, 100% {
+        opacity: 1;
+        box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.28);
+      }
+      50% {
+        opacity: 0.72;
+        box-shadow: 0 0 0 6px rgba(245, 158, 11, 0);
+      }
+    }
+    .pendientes-alert-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #fef3c7;
+      color: #92400e;
+      border: 1.5px solid #fcd34d;
+      border-radius: 12px;
+      padding: 5px 13px;
+      animation: pendientesSoftBlink 2.2s ease-in-out infinite;
+    }
+
+    .badge{display:inline-flex;align-items:center;border-radius:99px;padding:4px 9px;font-size:12px;font-weight:700;white-space:nowrap}
     .pending{background:#fff3d8;color:#805500}.done{background:#dcfce7;color:#166534}.record-card{border-left:4px solid #1774a7}.reveal{animation:reveal .42s ease both}@keyframes reveal{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-    @media(max-width:640px){.day{min-height:57px;padding:4px}.day-count,.calendar-detail{display:none}}
+    @media(max-width:640px){.day{min-height:58px;padding:5px;border-radius:11px}.day-count,.calendar-detail{display:none}}
     .preserve-format { white-space: pre-wrap !important; word-break: break-word; }
 
     /* Animaciones de DAEBot */
@@ -181,38 +301,48 @@
     </section>
 
     <div class="grid items-start gap-6 xl:grid-cols-[1.12fr_.88fr]">
-     <section class="canva-panel card reveal p-4 sm:p-6" aria-labelledby="calendar-heading" style="background: rgb(255, 255, 255);">
+     <section class="canva-panel card calendar-panel-green reveal p-4 sm:p-6" aria-labelledby="calendar-heading">
       <div class="mb-5 flex items-center justify-between gap-3">
        <div>
-        <p class="canva-text text-xs font-bold uppercase tracking-widest" style="color: rgb(23, 116, 167);">Planificación</p>
+        <p class="canva-text text-xs font-bold uppercase tracking-widest text-emerald-700">Planificación</p>
         <h2 id="calendar-heading" class="canva-text mt-1 font-bold" style="color: rgb(19, 38, 59); font-size: 24px;">Calendario mensual</h2>
        </div>
-       <div class="flex gap-1">
-        <button id="previous-month" class="rounded-lg border border-slate-300 bg-white p-2" type="button" aria-label="Mes anterior"><i data-lucide="chevron-left"></i></button> 
-        <button id="next-month" class="rounded-lg border border-slate-300 bg-white p-2" type="button" aria-label="Mes siguiente"><i data-lucide="chevron-right"></i></button>
+       <div class="flex gap-1.5">
+        <button id="previous-month" class="rounded-xl border border-emerald-200 bg-white/90 p-2 hover:bg-emerald-50" type="button" aria-label="Mes anterior"><i data-lucide="chevron-left"></i></button> 
+        <button id="next-month" class="rounded-xl border border-emerald-200 bg-white/90 p-2 hover:bg-emerald-50" type="button" aria-label="Mes siguiente"><i data-lucide="chevron-right"></i></button>
        </div>
       </div>
       <div class="mb-4 flex items-center justify-between gap-3">
        <h3 id="calendar-title" class="serif text-2xl font-bold capitalize"></h3>
-       <button id="today-button" class="canva-button rounded-lg px-3 py-2 text-sm font-bold" type="button" style="background: rgb(12, 45, 77); color: rgb(255, 255, 255);">Ir al mes actual</button>
+       <button id="today-button" class="canva-button rounded-xl px-3.5 py-2 text-sm font-bold shadow-sm" type="button" style="background: rgb(12, 45, 77); color: rgb(255, 255, 255);">Ir al mes actual</button>
       </div>
-      <div class="calendar mb-2 text-center text-xs font-bold text-slate-500">
-       <span>Lun</span><span>Mar</span><span>Mié</span><span>Jue</span><span>Vie</span><span>Sáb</span><span>Dom</span>
+      <div class="calendar calendar-weekdays-green mb-2.5 rounded-xl py-2 text-center text-[11px] font-extrabold uppercase tracking-wider">
+       <span>Lun</span><span>Mar</span><span>Mié</span><span>Jue</span><span>Vie</span><span class="text-sky-800">Sáb</span><span class="text-sky-800">Dom</span>
       </div>
       <div id="calendar" class="calendar" aria-label="Calendario mensual"></div>
-      <div class="calendar-detail mt-5 border-t border-slate-200 pt-5">
-       <div class="mb-3 flex items-center justify-between gap-3">
-        <h3 id="selected-title" class="font-bold"></h3><span id="selected-count" class="text-xs font-semibold text-slate-500"></span>
-       </div>
-       <div id="selected-list" class="space-y-2"></div>
+
+      <!-- DETALLE DEL DÍA SELECCIONADO / HOY (PLEGABLE Y DESPLEGABLE) -->
+      <div class="calendar-detail mt-5 border-t border-emerald-200/80 pt-5">
+       <details id="selected-day-details" class="group" open>
+        <summary class="flex cursor-pointer items-center justify-between gap-3 list-none select-none">
+         <h3 id="selected-title" class="font-bold"></h3>
+         <div class="flex items-center gap-2 flex-shrink-0">
+          <span id="selected-count" class="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-bold text-emerald-900"></span>
+          <span class="rounded-full bg-emerald-100 p-1.5 text-emerald-800 transition group-open:rotate-180" title="Plegar o desplegar actividades del día">
+           <i data-lucide="chevron-down" class="h-4 w-4"></i>
+          </span>
+         </div>
+        </summary>
+        <div id="selected-list" class="mt-3 space-y-2"></div>
+       </details>
       </div>
      </section>
 
-     <aside class="space-y-6">
+     <aside class="space-y-5">
       <section class="canva-panel card reveal p-4 sm:p-6" aria-labelledby="leyenda-heading" style="background: rgb(255, 255, 255);">
        <p class="canva-text text-xs font-bold uppercase tracking-widest" style="color: rgb(23, 116, 167);">Referencias</p>
        <h2 id="leyenda-heading" class="canva-text mt-1 font-bold" style="color: rgb(19, 38, 59); font-size: 20px;">Código de Colores</h2>
-       <div id="leyenda-colores" class="mt-4 flex flex-wrap gap-2"></div>
+       <div id="leyenda-colores" class="mt-4 flex flex-wrap gap-1.5"></div>
       </section>
 
       <!-- PANEL DE REPORTES A MEDIDA CON DAEBOT ANIMADO -->
@@ -374,11 +504,12 @@
        </details>
       </section>
 
+      <!-- BUSCAR Y FILTRAR -->
       <section class="canva-panel card reveal p-4 sm:p-6" aria-labelledby="filters-heading" style="background: rgb(255, 255, 255);">
        <div class="flex items-center justify-between gap-2">
          <div>
            <p class="canva-text text-xs font-bold uppercase tracking-widest" style="color: rgb(23, 116, 167);">Consulta rápida</p>
-           <h2 id="filters-heading" class="canva-text mt-1 font-bold" style="color: rgb(19, 38, 59); font-size: 24px;">Buscar y filtrar</h2>
+           <h2 id="filters-heading" class="canva-text mt-1 font-bold" style="color: rgb(19, 38, 59); font-size: 22px;">Buscar y filtrar</h2>
          </div>
          <button id="clear-filters" type="button" class="text-xs font-bold text-sky-700 hover:underline bg-sky-50 px-2.5 py-1.5 rounded-lg border border-sky-100">Restablecer</button>
        </div>
@@ -388,52 +519,61 @@
         <div><label class="canva-text mb-1 block text-sm font-semibold" for="location-input" style="color: rgb(39, 67, 87);">Localidad (Búsqueda libre)</label> <input id="location-input" class="field" type="search" placeholder="Ej: Viedma, Bariloche..."></div>
        </div>
       </section>
+
+      <!-- LISTADO DE ACTIVIDADES (COMPACTO DEBAJO DE BUSCAR Y FILTRAR) -->
+      <section class="canva-panel card reveal px-4 py-3" aria-labelledby="list-heading" style="background: rgb(255, 255, 255);">
+       <details class="group">
+        <summary class="flex cursor-pointer items-center justify-between list-none select-none gap-2">
+         <div class="min-w-0">
+          <p class="canva-text text-[10px] font-bold uppercase tracking-widest" style="color: rgb(23, 116, 167);">Seguimiento operativo</p>
+          <h2 id="list-heading" class="canva-text font-bold text-sm" style="color: rgb(19, 38, 59);">Listado de actividades</h2>
+         </div>
+         <div class="flex items-center gap-2 flex-shrink-0">
+          <span id="visible-count" class="rounded-full bg-sky-50 px-2.5 py-1 text-xs font-bold text-sky-800"></span>
+          <span class="rounded-full bg-sky-50 p-1.5 text-sky-700 transition group-open:rotate-180">
+           <i data-lucide="chevron-down" class="h-3.5 w-3.5"></i>
+          </span>
+         </div>
+        </summary>
+        <div class="mt-3 pt-3 border-t border-slate-200 max-h-80 overflow-y-auto pr-1">
+         <div id="record-list" class="divide-y divide-slate-200"></div>
+         <div id="empty-state" class="hidden py-6 text-center">
+          <p class="canva-text text-xs font-medium" style="color: rgb(88, 112, 132);">No hay actividades vigentes que coincidan con los filtros seleccionados.</p>
+         </div>
+        </div>
+       </details>
+      </section>
      </aside>
     </div>
 
-    <!-- LISTADO DE ACTIVIDADES (CERRADO) -->
-    <section class="canva-panel card mt-6 reveal p-4 sm:p-6" aria-labelledby="list-heading" style="background: rgb(255, 255, 255);">
-     <details class="group">
-      <summary class="flex cursor-pointer items-center justify-between list-none select-none pb-2">
+    <!-- ASUNTOS PENDIENTES (CON ALERTA MODERADA TITILANTE Y DESPLEGADO POR DEFECTO) -->
+    <section class="canva-panel card mt-7 reveal p-5 sm:p-7 border-t-4 border-t-amber-500 shadow-md" style="background: rgb(255, 255, 255);">
+     <details class="group" open>
+      <summary class="flex cursor-pointer items-center justify-between list-none select-none pb-2 gap-3">
        <div>
-        <p class="canva-text text-xs font-bold uppercase tracking-widest" style="color: rgb(23, 116, 167);">Seguimiento operativo</p>
-        <h2 id="list-heading" class="canva-text mt-1 font-bold" style="color: rgb(19, 38, 59); font-size: 24px;">Listado de actividades</h2>
+        <p class="canva-text text-xs font-bold uppercase tracking-widest text-amber-700">Prioridad y seguimiento</p>
+        <div class="mt-1.5 flex flex-wrap items-center gap-2.5">
+          <h2 class="canva-text font-extrabold text-xl sm:text-2xl pendientes-alert-pill">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0 text-amber-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
+              <path d="M12 9v4"/>
+              <path d="M12 17h.01"/>
+            </svg>
+            Asuntos pendientes
+          </h2>
+          <span id="fecha-actual-pendiente" class="text-sm font-medium text-slate-500"></span>
+        </div>
        </div>
-       <div class="flex items-center gap-3">
-        <span id="visible-count" class="rounded-full bg-sky-50 px-3 py-2 text-sm font-bold text-sky-800"></span>
-        <span class="rounded-full bg-sky-50 p-2 text-sky-700 transition group-open:rotate-180">
+       <div class="flex items-center gap-2.5 flex-shrink-0">
+        <span id="pendientes-count" class="rounded-full bg-amber-100 px-3 py-1.5 text-xs font-bold text-amber-900"></span>
+        <span class="rounded-full bg-amber-50 p-2 text-amber-700 transition group-open:rotate-180">
          <i data-lucide="chevron-down" class="h-4 w-4"></i>
         </span>
        </div>
       </summary>
-      <div class="pt-4 border-t border-slate-200">
-       <div id="record-list" class="divide-y divide-slate-200"></div>
-       <div id="empty-state" class="hidden py-10 text-center">
-        <p class="canva-text text-sm font-medium" style="color: rgb(88, 112, 132);">No hay actividades vigentes que coincidan con los filtros seleccionados.</p>
-       </div>
-      </div>
-     </details>
-    </section>
-
-    <!-- ASUNTOS PENDIENTES (CERRADO) -->
-    <section class="canva-panel card mt-6 reveal p-4 sm:p-6" style="background: rgb(255, 255, 255);">
-     <details class="group">
-      <summary class="flex cursor-pointer items-center justify-between list-none select-none pb-2">
+      <div class="pt-4 border-t border-slate-200 space-y-3.5">
        <div>
-        <p class="canva-text text-xs font-bold uppercase tracking-widest" style="color: rgb(23, 116, 167);">Notas rápidas</p>
-        <h2 class="canva-text mt-1 font-bold" style="color: rgb(19, 38, 59); font-size: 24px;">
-          Asuntos pendientes <span id="fecha-actual-pendiente" class="text-sm font-normal text-slate-500"></span>
-        </h2>
-       </div>
-       <div class="flex items-center gap-3">
-        <span class="rounded-full bg-sky-50 p-2 text-sky-700 transition group-open:rotate-180">
-         <i data-lucide="chevron-down" class="h-4 w-4"></i>
-        </span>
-       </div>
-      </summary>
-      <div class="pt-4 border-t border-slate-200 space-y-3">
-       <div>
-         <input id="search-pendientes" class="field text-xs" type="search" placeholder="Filtrar asuntos pendientes por palabra clave...">
+         <input id="search-pendientes" class="field text-sm" type="search" placeholder="Filtrar asuntos pendientes por palabra clave...">
        </div>
        <div id="lista-pendientes" class="space-y-3"></div>
       </div>
@@ -447,15 +587,15 @@
   </div>
 
   <template id="record-template">
-   <article class="record-card py-4">
-    <div class="flex flex-col justify-between gap-3 lg:flex-row">
+   <article class="record-card py-3 pl-3">
+    <div class="flex flex-col justify-between gap-2">
      <div class="min-w-0 flex-1">
-      <div class="flex flex-wrap items-center gap-2">
-       <h3 class="row-title font-bold"></h3><span class="row-status badge"></span><span class="row-area badge bg-slate-100 text-slate-700"></span>
+      <div class="flex flex-wrap items-center gap-1.5">
+       <h3 class="row-title text-xs font-bold"></h3><span class="row-status badge" style="font-size: 10px; padding: 2px 7px;"></span><span class="row-area badge bg-slate-100 text-slate-700" style="font-size: 10px; padding: 2px 7px;"></span>
       </div>
-      <p class="row-location mt-2 text-sm font-semibold text-slate-700"></p>
-      <p class="row-notes preserve-format mt-1 text-sm leading-relaxed text-slate-600"></p>
-      <p class="row-meta mt-3 text-xs font-medium text-slate-600"></p>
+      <p class="row-location mt-1 text-xs font-semibold text-slate-700"></p>
+      <p class="row-notes preserve-format mt-1 text-xs leading-relaxed text-slate-600"></p>
+      <p class="row-meta mt-2 text-[11px] font-medium text-slate-500"></p>
      </div>
     </div>
    </article>
@@ -604,10 +744,12 @@
       Object.keys(coloresOrganismos).forEach(org => {
         const col = coloresOrganismos[org];
         const badge = document.createElement("span");
-        badge.className = "badge";
+        badge.className = "badge flex-1 justify-center text-center";
         badge.style.setProperty("background-color", col.bg, "important");
         badge.style.setProperty("color", col.text, "important");
         badge.style.setProperty("border", `1px solid ${col.bar}`, "important");
+        badge.style.setProperty("padding", "6px 10px", "important");
+        badge.style.setProperty("font-size", "11.5px", "important");
         badge.textContent = org;
         box.appendChild(badge);
       });
@@ -689,6 +831,7 @@
     
     function renderCalendar() {
       const year = activeMonth.getFullYear(), month = activeMonth.getMonth();
+      const todayIso = iso(new Date());
       $("calendar-title").textContent = monthFormat.format(activeMonth);
       const box = $("calendar");
       box.innerHTML = "";
@@ -699,42 +842,86 @@
         const d = new Date(start);
         d.setDate(start.getDate() + i);
         const key = iso(d);
-        const allDayItems = activeFiltered.filter(r => inRange(r, key));
+        const allDayItems = activeFiltered
+          .filter(r => inRange(r, key))
+          .sort((a, b) => (a.area || "").localeCompare(b.area || "", "es"));
+        const isToday = key === todayIso;
         
         const b = document.createElement("button");
         b.type = "button";
         b.className = "day";
         if (d.getMonth() !== month) b.classList.add("muted");
+        if (isToday) b.classList.add("today");
         if (key === selectedDate) b.classList.add("selected");
         b.setAttribute("aria-label", `${dayFormat.format(d)}, ${allDayItems.length} registros`);
         
         const headerDiv = document.createElement("div");
-        headerDiv.className = "flex items-center justify-between";
-        headerDiv.innerHTML = `<strong class="text-xs">${d.getDate()}</strong><span class="day-count text-[10px] text-slate-500">${allDayItems.length || ""}</span>`;
+        headerDiv.className = "flex items-center justify-between w-full";
+
+        const numBadge = isToday
+          ? `<span class="inline-flex h-6 w-6 items-center justify-center rounded-full bg-[#39C937] text-xs font-extrabold text-white shadow-sm">${d.getDate()}</span>`
+          : `<strong class="text-xs font-bold text-slate-800">${d.getDate()}</strong>`;
+
+        const countBadge = allDayItems.length
+          ? `<span class="day-count rounded-full bg-white/85 px-1.5 py-0.5 text-[10px] font-bold text-emerald-950 border border-emerald-300/60">${allDayItems.length}</span>`
+          : "";
+
+        headerDiv.innerHTML = `${numBadge}${countBadge}`;
         b.appendChild(headerDiv);
         
-        allDayItems.forEach(item => {
+        if (allDayItems.length > 0) {
+          const barsWrap = document.createElement("div");
+          barsWrap.className = "day-bars-wrap";
+          allDayItems.forEach(item => {
             const barra = document.createElement("div");
             barra.className = "day-bar";
+            barra.title = `${item.area}: ${item.title}`;
             barra.style.setProperty("background-color", obtenerColor(item.area).bar, "important");
-            b.appendChild(barra);
-        });
+            barsWrap.appendChild(barra);
+          });
+          b.appendChild(barsWrap);
+        }
 
-        b.onclick = () => { selectedDate = key; if (d.getMonth() !== activeMonth.getMonth()) activeMonth = new Date(d.getFullYear(), d.getMonth(), 1); renderAll(); };
+        b.onclick = () => {
+          selectedDate = key;
+          if (d.getMonth() !== activeMonth.getMonth()) activeMonth = new Date(d.getFullYear(), d.getMonth(), 1);
+          const detailBox = $("selected-day-details");
+          if (detailBox) detailBox.open = true;
+          renderAll();
+        };
         box.appendChild(b);
       }
     }
 
     function renderSelected() {
       const records = activeCalendarRecords().filter(r => inRange(r, selectedDate)).sort((a, b) => a.title.localeCompare(b.title, "es"));
-      $("selected-title").textContent = dayFormat.format(parseDate(selectedDate));
+      const todayIso = iso(new Date());
+      const titleEl = $("selected-title");
+
+      if (selectedDate === todayIso) {
+        titleEl.className = "font-bold";
+        titleEl.innerHTML = `
+          <span class="hoy-alert-badge">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
+              <path d="M12 9v4"/>
+              <path d="M12 17h.01"/>
+            </svg>
+            HOY
+          </span>
+        `;
+      } else {
+        titleEl.className = "font-bold capitalize";
+        titleEl.textContent = dayFormat.format(parseDate(selectedDate));
+      }
+
       $("selected-count").textContent = `${records.length} ${records.length === 1 ? "actividad" : "actividades"}`;
       const box = $("selected-list");
       box.innerHTML = "";
-      if (!records.length) { box.innerHTML = "<p class='rounded-lg bg-slate-50 p-3 text-sm text-slate-500'>No hay actividades vigentes para esta fecha.</p>"; return }
+      if (!records.length) { box.innerHTML = "<p class='rounded-xl bg-slate-50 p-3 text-sm text-slate-500'>No hay actividades vigentes para esta fecha.</p>"; return }
       records.forEach(r => {
         const item = document.createElement("article");
-        item.className = "rounded-lg border border-slate-200 bg-slate-50 p-3";
+        item.className = "rounded-xl border border-slate-200 bg-slate-50/80 p-3.5";
         item.innerHTML = `<div class="flex items-start justify-between gap-3"><strong class="text-sm"></strong><span class="text-xs font-bold text-sky-800"></span></div><p class="mt-1 text-xs text-slate-600"></p><p class="mt-1 text-xs text-slate-500 preserve-format"></p>`;
         item.querySelector("strong").textContent = r.title;
         const selSpan = item.querySelector("span");
@@ -790,6 +977,11 @@
         return !queryPendientes || texto.includes(queryPendientes);
       });
 
+      const countBadge = $("pendientes-count");
+      if (countBadge) {
+        countBadge.textContent = `${pendientesFiltrados.length} ${pendientesFiltrados.length === 1 ? "pendiente" : "pendientes"}`;
+      }
+
       if (pendientesFiltrados.length === 0) {
         contenedor.innerHTML = "<p class='rounded-lg bg-slate-50 p-3 text-sm text-slate-500'>No hay asuntos pendientes que coincidan con la búsqueda.</p>";
         return;
@@ -797,10 +989,10 @@
 
       pendientesFiltrados.forEach((item) => {
         const div = document.createElement("div");
-        div.className = "flex items-start gap-3 rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm";
+        div.className = "flex items-start gap-3 rounded-xl border border-amber-200/70 bg-amber-50/40 p-3.5 text-sm shadow-xs";
         div.innerHTML = `
-          <span class="mt-0.5 h-2 w-2 rounded-full bg-amber-500 shrink-0"></span>
-          <p class="w-full text-slate-800 preserve-format">${item.texto || ''}</p>
+          <span class="mt-1.5 h-2.5 w-2.5 rounded-full bg-amber-500 shrink-0"></span>
+          <p class="w-full text-slate-800 font-medium preserve-format">${item.texto || ''}</p>
         `;
         contenedor.appendChild(div);
       });
@@ -1150,6 +1342,8 @@
       $("today-button").onclick = () => { 
         activeMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1); 
         selectedDate = iso(new Date());
+        const detailBox = $("selected-day-details");
+        if (detailBox) detailBox.open = true;
         renderAll(); 
       };
 

@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Agenda Ministerial</title>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Source+Serif+4:wght@600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800;900&family=Source+Serif+4:wght@600;700&display=swap" rel="stylesheet">
   <style>
-    :root{--ink:#13263b;--navy:#0c2d4d;--blue:#1774a7;--sky:#e8f2f7;--paper:#f5f7f8;--line:#d6e0e6;--muted:#587084;--gold:#d7a938;--green:#178d62;--color-1:#76E35B;--rnblue:#0063BE}
+    :root{--ink:#13263b;--navy:#0c2d4d;--blue:#1774a7;--sky:#e8f2f7;--paper:#f5f7f8;--line:#d6e0e6;--muted:#587084;--gold:#d7a938;--green:#178d62;--color-1:#39C937;--rnblue:#0063BE}
     *{box-sizing:border-box} body{margin:0;font-family:"DM Sans",sans-serif;color:var(--ink);background:var(--paper)}
     .serif{font-family:"Source Serif 4",serif}
-    .masthead{background:var(--color-1);position:relative;overflow:hidden}
+    .masthead{background:var(--color-1);position:relative;overflow:hidden;border-bottom:4px solid var(--rnblue)}
     .masthead:after{content:"";position:absolute;right:-80px;bottom:-145px;width:340px;height:340px;border:42px solid rgba(12,45,77,.08);border-radius:50%}
     .card{background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:0 8px 20px rgba(18,47,70,.06)}
     .field{width:100%;border:1px solid #bccbd4;border-radius:10px;padding:10px 12px;background:#fff;color:var(--ink);font:inherit}
@@ -23,57 +23,52 @@
     @media(max-width:640px){.day{min-height:57px;padding:4px}.day-count,.calendar-detail{display:none}}
     .preserve-format { white-space: pre-wrap !important; word-break: break-word; }
 
-    /* Pantalla de bienvenida a pantalla completa */
-    #welcome-overlay {
-      background-color: var(--color-1);
-      border-bottom: 8px solid var(--rnblue);
-      transition: opacity 0.65s cubic-bezier(0.22, 1, 0.36, 1), transform 0.65s cubic-bezier(0.22, 1, 0.36, 1), visibility 0.65s ease;
-      overflow: hidden;
+    /* Animaciones de DAEBot */
+    @keyframes botFloat {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-5px); }
     }
-    #welcome-overlay::before {
-      content: "";
-      position: absolute;
-      left: -140px;
-      top: -140px;
-      width: 440px;
-      height: 440px;
-      border: 52px solid rgba(12, 45, 77, 0.06);
-      border-radius: 50%;
-      pointer-events: none;
+    @keyframes botWaveLeft {
+      0%, 100% { transform: rotate(0deg); }
+      50% { transform: rotate(-14deg); }
     }
-    #welcome-overlay::after {
-      content: "";
-      position: absolute;
-      right: -120px;
-      bottom: -160px;
-      width: 520px;
-      height: 520px;
-      border: 62px solid rgba(12, 45, 77, 0.07);
-      border-radius: 50%;
-      pointer-events: none;
+    @keyframes botWaveRight {
+      0%, 100% { transform: rotate(0deg); }
+      50% { transform: rotate(14deg); }
     }
-    #welcome-overlay.fade-out {
+    @keyframes botQuestionFloat {
+      0%, 100% { transform: translateY(0px) scale(1); opacity: 0.95; }
+      50% { transform: translateY(-4px) scale(1.08); opacity: 1; }
+    }
+    @keyframes botBlink {
+      0%, 92%, 100% { transform: scaleY(1); }
+      96% { transform: scaleY(0.1); }
+    }
+
+    .daebot-float { animation: botFloat 3.2s ease-in-out infinite; }
+    .daebot-arm-l { transform-origin: 42px 92px; animation: botWaveLeft 2.8s ease-in-out infinite; }
+    .daebot-arm-r { transform-origin: 118px 92px; animation: botWaveRight 2.8s ease-in-out infinite; }
+    .daebot-q-center { animation: botQuestionFloat 2.4s ease-in-out infinite; }
+    .daebot-q-side { animation: botQuestionFloat 2.4s ease-in-out 0.4s infinite; }
+    .daebot-eye { transform-origin: center; animation: botBlink 4.5s infinite; }
+
+    /* Animaciones Diapositiva de Bienvenida */
+    @keyframes pptRevealContent {
+      0% { opacity: 0; transform: translateY(24px) scale(0.98); filter: blur(4px); }
+      100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+    }
+    @keyframes pptRevealBar {
+      0% { transform: scaleX(0); }
+      100% { transform: scaleX(1); }
+    }
+    .ppt-reveal-content { animation: pptRevealContent 0.95s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+    .ppt-reveal-sub { opacity: 0; animation: pptRevealContent 0.95s cubic-bezier(0.22, 1, 0.36, 1) 0.25s forwards; }
+    .ppt-progress-bar { transform-origin: left center; animation: pptRevealBar 2.6s linear forwards; }
+    .ppt-slide-exit {
       opacity: 0;
-      transform: translateY(-16px);
-      visibility: hidden;
+      transform: scale(1.03);
+      transition: opacity 0.75s cubic-bezier(0.4, 0, 0.2, 1), transform 0.75s cubic-bezier(0.4, 0, 0.2, 1);
       pointer-events: none;
-    }
-    .welcome-content {
-      animation: welcomeEnter 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
-    }
-    @keyframes welcomeEnter {
-      from { opacity: 0; transform: translateY(18px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    .welcome-bar-fill {
-      width: 0%;
-      background-color: var(--navy);
-      animation: barLoad 1.35s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-    }
-    @keyframes barLoad {
-      0% { width: 0%; }
-      65% { width: 78%; }
-      100% { width: 100%; }
     }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/lucide@0.577.0/dist/umd/lucide.min.js" type="text/javascript"></script>
@@ -84,68 +79,57 @@
 </head>
 <body style="background: rgb(245, 247, 248); overflow: hidden;">
 
-  <!-- Bienvenida Fullscreen con estética institucional Río Negro -->
-  <div id="welcome-overlay" role="status" aria-live="polite" class="fixed inset-0 z-50 flex flex-col justify-between px-6 py-8 sm:px-12 sm:py-10">
-    <!-- Barra superior institucional -->
-    <div class="relative z-10 flex items-center justify-between w-full max-w-6xl mx-auto">
-      <div class="flex items-center gap-3.5">
-        <div class="flex h-11 w-22 rounded-lg overflow-hidden shadow-md border border-black/15 flex-shrink-0 bg-black">
-          <div class="w-1/2 bg-black flex items-center justify-center px-1">
-            <svg class="w-9 h-9" viewBox="0 0 100 100">
+  <!-- Diapositiva de Bienvenida Animada en Verde #39C937 -->
+  <div id="welcome-slide" class="fixed inset-0 z-50 flex flex-col justify-between bg-[#39C937] text-white overflow-hidden">
+    <div class="w-full h-2.5 flex shadow-sm">
+      <div class="w-1/3 bg-[#0063BE]"></div>
+      <div class="w-1/3 bg-white"></div>
+      <div class="w-1/3 bg-black"></div>
+    </div>
+
+    <div class="max-w-4xl mx-auto px-6 text-center flex flex-col items-center justify-center my-auto space-y-6">
+      <div class="ppt-reveal-content flex items-center justify-center">
+        <div class="flex h-20 w-40 rounded-xl overflow-hidden shadow-2xl border-2 border-white/50 bg-black">
+          <div class="w-1/2 bg-black flex items-center justify-center">
+            <svg class="w-full h-full" viewBox="0 0 100 100">
               <g fill="white">
-                <circle cx="28" cy="22" r="2.5"/><circle cx="38" cy="16" r="2.5"/><circle cx="50" cy="14" r="2.5"/><circle cx="62" cy="16" r="2.5"/><circle cx="72" cy="22" r="2.5"/>
-                <circle cx="78" cy="32" r="2.5"/><circle cx="80" cy="45" r="2.5"/><circle cx="78" cy="58" r="2.5"/><circle cx="72" cy="68" r="2.5"/>
-                <circle cx="62" cy="74" r="2.5"/><circle cx="50" cy="76" r="2.5"/><circle cx="38" cy="74" r="2.5"/><circle cx="28" cy="68" r="2.5"/>
-                <circle cx="22" cy="58" r="2.5"/><circle cx="20" cy="45" r="2.5"/><circle cx="22" cy="32" r="2.5"/>
+                <circle cx="28" cy="22" r="2.3"/><circle cx="38" cy="16" r="2.3"/><circle cx="50" cy="14" r="2.3"/><circle cx="62" cy="16" r="2.3"/><circle cx="72" cy="22" r="2.3"/>
+                <circle cx="78" cy="32" r="2.3"/><circle cx="80" cy="45" r="2.3"/><circle cx="78" cy="58" r="2.3"/><circle cx="72" cy="68" r="2.3"/>
+                <circle cx="62" cy="74" r="2.3"/><circle cx="50" cy="76" r="2.3"/><circle cx="38" cy="74" r="2.3"/><circle cx="28" cy="68" r="2.3"/>
+                <circle cx="22" cy="58" r="2.3"/><circle cx="20" cy="45" r="2.3"/><circle cx="22" cy="32" r="2.3"/>
               </g>
             </svg>
           </div>
-          <div class="w-1/2 flex items-center justify-center px-2" style="background-color: #39C937;">
-            <span class="text-white font-black text-sm tracking-wider">RN</span>
+          <div class="w-1/2 bg-[#39C937] flex items-center justify-center">
+            <span class="text-white font-black text-2xl tracking-widest">RN</span>
           </div>
         </div>
-        <div class="text-left">
-          <span class="block text-[11px] uppercase font-extrabold tracking-widest" style="color: #0c2d4d;">Provincia de Río Negro</span>
-          <span class="block text-xs sm:text-sm font-bold" style="color: #0c2d4d;">Ministerio de Gobierno y Trabajo</span>
-        </div>
       </div>
 
-      <span class="rounded-full px-4 py-1.5 text-xs sm:text-sm font-bold shadow-sm" style="background-color: #0c2d4d; color: #ffffff;">2026</span>
-    </div>
-
-    <!-- Centro a pantalla completa -->
-    <div class="welcome-content relative z-10 flex flex-col items-center text-center max-w-2xl mx-auto my-auto px-4">
-      <div class="flex h-20 w-40 sm:h-24 sm:w-48 rounded-2xl overflow-hidden shadow-xl border-2 border-white/40 mb-7 bg-black">
-        <div class="w-1/2 bg-black flex items-center justify-center">
-          <svg class="w-full h-full p-1" viewBox="0 0 100 100">
-            <g fill="white">
-              <circle cx="28" cy="22" r="2.6"/><circle cx="38" cy="16" r="2.6"/><circle cx="50" cy="14" r="2.6"/><circle cx="62" cy="16" r="2.6"/><circle cx="72" cy="22" r="2.6"/>
-              <circle cx="78" cy="32" r="2.6"/><circle cx="80" cy="45" r="2.6"/><circle cx="78" cy="58" r="2.6"/><circle cx="72" cy="68" r="2.6"/>
-              <circle cx="62" cy="74" r="2.6"/><circle cx="50" cy="76" r="2.6"/><circle cx="38" cy="74" r="2.6"/><circle cx="28" cy="68" r="2.6"/>
-              <circle cx="22" cy="58" r="2.6"/><circle cx="20" cy="45" r="2.6"/><circle cx="22" cy="32" r="2.6"/>
-            </g>
-          </svg>
-        </div>
-        <div class="w-1/2 flex items-center justify-center" style="background-color: #39C937;">
-          <span class="text-white font-black text-2xl sm:text-3xl tracking-wider">RN</span>
-        </div>
+      <div class="ppt-reveal-content space-y-3">
+        <span class="inline-block text-xs md:text-sm uppercase font-bold tracking-[0.25em] text-white bg-black/15 px-4 py-1 rounded-full">
+          Ministerio de Gobierno y Trabajo
+        </span>
+        <h1 class="text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight leading-tight text-white drop-shadow-sm">
+          Bienvenido a la Agenda Ministerial de la Provincia de Río Negro
+        </h1>
       </div>
 
-      <p class="text-xs sm:text-sm uppercase font-extrabold tracking-[0.2em] mb-2" style="color: #0c2d4d;">Bienvenido</p>
-      <h1 class="serif text-4xl sm:text-6xl font-bold tracking-tight leading-tight" style="color: #0c2d4d;">Agenda Ministerial</h1>
-      <p class="mt-3 text-sm sm:text-base font-semibold max-w-md" style="color: rgba(12, 45, 77, 0.85);">Planificación operativa, seguimiento territorial y actividades vigentes</p>
-
-      <div class="w-full max-w-xs sm:max-w-sm mt-8">
-        <div class="w-full h-2 rounded-full overflow-hidden" style="background-color: rgba(12, 45, 77, 0.16);">
-          <div class="welcome-bar-fill h-full rounded-full"></div>
+      <div class="ppt-reveal-sub pt-2 flex flex-col items-center space-y-4">
+        <p class="text-xs md:text-sm text-white/95 max-w-xl font-medium">
+          Sistema de planificación operativa, seguimiento territorial, calendario mensual y reportes a medida.
+        </p>
+        <div class="w-52 h-1.5 bg-black/20 rounded-full overflow-hidden">
+          <div class="h-full bg-white ppt-progress-bar"></div>
         </div>
-        <p class="mt-2.5 text-xs font-bold tracking-wide" style="color: #0c2d4d;">Sincronizando actividades...</p>
+        <button type="button" onclick="cerrarDiapositivaBienvenida()" class="text-[11px] uppercase tracking-widest text-white/95 hover:text-white font-bold transition pt-1 cursor-pointer">
+          Ingresar ahora →
+        </button>
       </div>
     </div>
 
-    <!-- Pie institucional -->
-    <div class="relative z-10 text-center">
-      <p class="text-xs font-bold tracking-wide" style="color: #0c2d4d;">Gobierno de Río Negro · Sistema de Gestión y Seguimiento</p>
+    <div class="pb-5 text-center text-[11px] text-white font-semibold tracking-wider">
+      Gobierno de la Provincia de Río Negro
     </div>
   </div>
   
@@ -154,7 +138,7 @@
     <div class="relative z-10 mx-auto max-w-7xl">
      <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div class="flex items-center gap-4">
-       <div class="flex h-12 w-24 rounded-lg overflow-hidden shadow-sm border border-black/10 flex-shrink-0 bg-black">
+       <div class="flex h-12 w-24 rounded-lg overflow-hidden shadow-md border border-white/30 flex-shrink-0 bg-black">
         <div class="w-1/2 bg-black flex items-center justify-center">
           <svg class="w-full h-full" viewBox="0 0 100 100">
             <g fill="white">
@@ -165,16 +149,16 @@
             </g>
           </svg>
         </div>
-        <div class="w-1/2 flex items-center justify-center" style="background-color: #39C937;">
+        <div class="w-1/2 bg-[#39C937] flex items-center justify-center">
           <span class="text-white font-black text-base tracking-wider">RN</span>
         </div>
        </div>
        <div>
-        <p class="canva-text mb-1 text-sm font-semibold tracking-wide" style="color: rgb(12, 45, 77); font-weight: 700;">Ministerio de Gobierno y Trabajo · Provincia de Río Negro</p>
-        <h1 id="header-title" class="canva-text serif max-w-3xl font-bold leading-tight" style="color: rgb(12, 45, 77); font-size: 30px;">Agenda Ministerial</h1>
+        <p class="canva-text mb-1 text-xs sm:text-sm uppercase font-bold tracking-wider text-white/95">Ministerio de Gobierno y Trabajo · Provincia de Río Negro</p>
+        <h1 id="header-title" class="canva-text serif max-w-3xl font-bold leading-tight text-white drop-shadow-sm" style="font-size: 30px;">Agenda Ministerial</h1>
        </div>
       </div>
-      <span id="header-badge" class="canva-tag w-fit rounded-full px-4 py-2 text-sm font-bold shadow-sm" style="background: rgb(12, 45, 77); color: rgb(255, 255, 255);">2026</span>
+      <span id="header-badge" class="canva-tag w-fit rounded-full px-4 py-2 text-sm font-bold shadow-sm bg-slate-900 text-white">2026</span>
      </div>
     </div>
    </header>
@@ -231,15 +215,108 @@
        <div id="leyenda-colores" class="mt-4 flex flex-wrap gap-2"></div>
       </section>
 
-      <!-- PANEL DE REPORTES A MEDIDA (CERRADO) -->
+      <!-- PANEL DE REPORTES A MEDIDA CON DAEBOT ANIMADO -->
       <section class="canva-panel card reveal p-4 sm:p-6 bg-gradient-to-br from-slate-900 to-slate-800 text-white shadow-xl" style="border: none;">
        <details class="group">
-        <summary class="flex cursor-pointer items-center justify-between list-none select-none pb-1">
-         <div class="flex items-center gap-2">
-           <i data-lucide="sliders" class="w-5 h-5 text-emerald-400"></i>
-           <h3 class="text-base font-bold text-white">Panel de Reportes a Medida</h3>
+        <summary class="flex cursor-pointer items-center justify-between list-none select-none pb-1 gap-3">
+         <div class="flex items-center gap-3 min-w-0">
+           <!-- DAEBot SVG Animado -->
+           <div class="w-14 h-16 flex-shrink-0 daebot-float drop-shadow-lg">
+             <svg viewBox="0 0 160 190" class="w-full h-full overflow-visible">
+               <defs>
+                 <linearGradient id="botWhiteGrad" x1="0" y1="0" x2="0" y2="1">
+                   <stop offset="0%" stop-color="#FFFFFF"/>
+                   <stop offset="100%" stop-color="#DCE8F8"/>
+                 </linearGradient>
+                 <linearGradient id="botGreenGrad" x1="0" y1="0" x2="0" y2="1">
+                   <stop offset="0%" stop-color="#4CE04A"/>
+                   <stop offset="100%" stop-color="#1E8E1C"/>
+                 </linearGradient>
+                 <linearGradient id="botLimeBelt" x1="0" y1="0" x2="1" y2="0">
+                   <stop offset="0%" stop-color="#9BE82C"/>
+                   <stop offset="50%" stop-color="#C9F74A"/>
+                   <stop offset="100%" stop-color="#84D41E"/>
+                 </linearGradient>
+                 <radialGradient id="visorGloss" cx="68%" cy="28%" r="55%">
+                   <stop offset="0%" stop-color="#4B5563" stop-opacity="0.7"/>
+                   <stop offset="60%" stop-color="#111827" stop-opacity="0.95"/>
+                   <stop offset="100%" stop-color="#030712" stop-opacity="1"/>
+                 </radialGradient>
+               </defs>
+
+               <g class="daebot-q-side" fill="url(#botGreenGrad)" stroke="#14532D" stroke-width="0.8">
+                 <text x="38" y="34" font-family="DM Sans, sans-serif" font-weight="900" font-size="22" transform="rotate(-14 38 34)">?</text>
+               </g>
+               <g class="daebot-q-center" fill="url(#botGreenGrad)" stroke="#14532D" stroke-width="0.8">
+                 <text x="71" y="28" font-family="DM Sans, sans-serif" font-weight="900" font-size="30">?</text>
+               </g>
+               <g class="daebot-q-side" fill="url(#botGreenGrad)" stroke="#14532D" stroke-width="0.8">
+                 <text x="108" y="35" font-family="DM Sans, sans-serif" font-weight="900" font-size="22" transform="rotate(14 108 35)">?</text>
+               </g>
+
+               <rect x="24" y="54" width="13" height="28" rx="6.5" fill="url(#botGreenGrad)"/>
+               <rect x="123" y="54" width="13" height="28" rx="6.5" fill="url(#botGreenGrad)"/>
+
+               <rect x="33" y="38" width="94" height="54" rx="24" fill="url(#botWhiteGrad)"/>
+               <rect x="42" y="45" width="76" height="40" rx="18" fill="url(#visorGloss)"/>
+
+               <rect class="daebot-eye" x="62" y="57" width="6.5" height="11" rx="3.25" fill="#FFFFFF"/>
+               <rect class="daebot-eye" x="91.5" y="57" width="6.5" height="11" rx="3.25" fill="#FFFFFF"/>
+               <path d="M 73 72 Q 80 79 87 72 Z" fill="#FFFFFF"/>
+
+               <g class="daebot-arm-l">
+                 <path d="M 52 96 L 26 108" stroke="url(#botGreenGrad)" stroke-width="13" stroke-linecap="round"/>
+                 <path d="M 33 105 L 22 110" stroke="url(#botWhiteGrad)" stroke-width="13" stroke-linecap="round"/>
+                 <circle cx="19" cy="111" r="8" fill="url(#botWhiteGrad)"/>
+               </g>
+
+               <g class="daebot-arm-r">
+                 <path d="M 108 96 L 134 86" stroke="url(#botGreenGrad)" stroke-width="13" stroke-linecap="round"/>
+                 <path d="M 127 89 L 138 84" stroke="url(#botWhiteGrad)" stroke-width="13" stroke-linecap="round"/>
+                 <circle cx="141" cy="82" r="8" fill="url(#botWhiteGrad)"/>
+               </g>
+
+               <rect x="58" y="132" width="15" height="24" rx="6" fill="url(#botWhiteGrad)"/>
+               <rect x="87" y="132" width="15" height="24" rx="6" fill="url(#botWhiteGrad)"/>
+
+               <rect x="52" y="151" width="23" height="14" rx="7" fill="url(#botGreenGrad)"/>
+               <rect x="85" y="151" width="23" height="14" rx="7" fill="url(#botGreenGrad)"/>
+
+               <rect x="51" y="92" width="58" height="46" rx="20" fill="url(#botGreenGrad)"/>
+               <rect x="51" y="119" width="58" height="8" rx="3" fill="url(#botLimeBelt)"/>
+
+               <g fill="#FFFFFF" transform="translate(80, 106) scale(0.24)">
+                 <circle cx="0" cy="-34" r="3.4"/>
+                 <circle cx="13" cy="-31.4" r="3.4"/>
+                 <circle cx="24" cy="-24" r="3.4"/>
+                 <circle cx="31.4" cy="-13" r="3.4"/>
+                 <circle cx="34" cy="0" r="3.4"/>
+                 <circle cx="31.4" cy="13" r="3.4"/>
+                 <circle cx="24" cy="24" r="3.4"/>
+                 <circle cx="13" cy="31.4" r="3.4"/>
+                 <circle cx="0" cy="34" r="3.4"/>
+                 <circle cx="-13" cy="31.4" r="3.4"/>
+                 <circle cx="-24" cy="24" r="3.4"/>
+                 <circle cx="-31.4" cy="13" r="3.4"/>
+                 <circle cx="-34" cy="0" r="3.4"/>
+                 <circle cx="-31.4" cy="-13" r="3.4"/>
+                 <circle cx="-24" cy="-24" r="3.4"/>
+                 <circle cx="-13" cy="-31.4" r="3.4"/>
+               </g>
+             </svg>
+           </div>
+
+           <div class="min-w-0">
+             <span class="inline-block text-[11px] font-extrabold tracking-wide bg-[#39C937] text-slate-950 px-2.5 py-0.5 rounded-full mb-1 shadow-sm">
+               ¡Pedile a DAEBot tu reporte a medida!
+             </span>
+             <div class="flex items-center gap-1.5">
+               <i data-lucide="sliders" class="w-4 h-4 text-emerald-400 flex-shrink-0"></i>
+               <h3 class="text-base font-bold text-white leading-tight">Panel de Reportes a Medida</h3>
+             </div>
+           </div>
          </div>
-         <span class="rounded-full bg-slate-700 p-1.5 text-emerald-300 transition group-open:rotate-180">
+         <span class="rounded-full bg-slate-700 p-1.5 text-emerald-300 transition group-open:rotate-180 flex-shrink-0">
           <i data-lucide="chevron-down" class="h-4 w-4"></i>
          </span>
         </summary>
@@ -364,8 +441,8 @@
     </section>
    </main>
 
-   <footer class="canva-footer mt-4 px-4 py-5" style="background: var(--color-1);">
-    <p class="canva-text mx-auto max-w-7xl text-center text-xs font-medium" style="color: rgb(12, 45, 77); font-weight: 700;">Ministerio de Gobierno y Trabajo · Provincia de Río Negro</p>
+   <footer class="bg-slate-900 text-slate-300 py-4 text-center text-xs border-t-4 border-[#39C937] mt-10">
+    <p class="font-semibold tracking-wide">Ministerio de Gobierno y Trabajo · Provincia de Río Negro</p>
    </footer>
   </div>
 
@@ -385,6 +462,19 @@
   </template>
 
   <script>
+    let slideCerrada = false;
+    function cerrarDiapositivaBienvenida() {
+      if (slideCerrada) return;
+      slideCerrada = true;
+      const slide = document.getElementById('welcome-slide');
+      if (!slide) return;
+      slide.classList.add('ppt-slide-exit');
+      setTimeout(() => {
+        document.body.style.overflow = "auto";
+        slide.style.display = 'none';
+      }, 750);
+    }
+
     const SUPABASE_URL = 'https://wyvxnzklfvhhzphubjik.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_Y8F-G_AnbvTRT7Z46vNoBQ_2TioQnLq';
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -594,7 +684,6 @@
       $("month-summary").textContent = monthFormat.format(activeMonth);
       $("total-value").textContent = r.length;
       $("range-value").textContent = r.filter(x => parts(x.date).start !== parts(x.date).end).length;
-      
       $("header-title").textContent = "Agenda Ministerial";
     }
     
@@ -746,12 +835,12 @@
         <head><meta charset='utf-8'><title>Reporte Ministerial</title>
         <style>
           body { font-family: 'Calibri', Arial, sans-serif; color: #13263b; line-height: 1.4; padding: 20px; font-size: 10pt; }
-          .header-box { background-color: #76E35B; padding: 15px; border-bottom: 2px solid #357ad7; margin-bottom: 20px; }
-          h1 { color: #0c2d4d; font-size: 14pt; margin: 0 0 5px 0; }
-          .subtitle { color: #0c2d4d; font-size: 10pt; font-weight: bold; margin: 0; }
+          .header-box { background-color: #39C937; padding: 15px; border-bottom: 2px solid #0063BE; margin-bottom: 20px; }
+          h1 { color: #ffffff; font-size: 14pt; margin: 0 0 5px 0; }
+          .subtitle { color: #ffffff; font-size: 10pt; font-weight: bold; margin: 0; }
           .fecha-gen { font-size: 9pt; color: #587084; text-align: right; margin-bottom: 15px; }
           .section-title { background-color: #0c2d4d; color: #ffffff; font-size: 10pt; font-weight: bold; padding: 6px 10px; margin-top: 20px; margin-bottom: 0; }
-          .cat-title { background-color: #357ad7; color: #ffffff; font-size: 10pt; font-weight: bold; padding: 6px 10px; margin-top: 20px; margin-bottom: 0; }
+          .cat-title { background-color: #0063BE; color: #ffffff; font-size: 10pt; font-weight: bold; padding: 6px 10px; margin-top: 20px; margin-bottom: 0; }
           table { width: 100%; border-collapse: collapse; margin-top: 0; margin-bottom: 15px; }
           th, td { border: 1px solid #d6e0e6; padding: 6px 8px; text-align: left; vertical-align: top; font-size: 9pt; }
           th { background-color: #f1f5f9; color: #0c2d4d; font-weight: bold; }
@@ -843,7 +932,7 @@
       }
 
       contenidoHtml += `
-          <div class="footer">Provincia de Río Negro · Generado automáticamente desde la Agenda Ministerial</div>
+          <div class="footer">Provincia de Río Negro · Generado automáticamente desde la Agenda Ministerial (DAEBot)</div>
         </body>
         </html>
       `;
@@ -883,10 +972,10 @@
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
 
-      doc.setFillColor(118, 227, 91);
+      doc.setFillColor(57, 201, 55);
       doc.rect(0, 0, 210, 24, 'F');
       
-      doc.setFillColor(53, 122, 215);
+      doc.setFillColor(0, 99, 190);
       doc.rect(0, 24, 210, 2, 'F');
 
       doc.setTextColor(255, 255, 255);
@@ -946,7 +1035,7 @@
         categoriasSeleccionadas.forEach(cat => {
           if (currentY > 240) { doc.addPage(); currentY = 20; }
 
-          doc.setFillColor(53, 122, 215);
+          doc.setFillColor(0, 99, 190);
           doc.rect(14, currentY, 182, 7, 'F');
           doc.setTextColor(255, 255, 255);
           doc.setFontSize(9);
@@ -982,7 +1071,7 @@
               head: [['Fecha', 'Actividad / Observaciones', 'Ubicación / Horario']],
               body: catRows,
               theme: 'grid',
-              headStyles: { fillColor: [53, 122, 215], textColor: [255, 255, 255], fontSize: 8, fontStyle: 'bold' },
+              headStyles: { fillColor: [0, 99, 190], textColor: [255, 255, 255], fontSize: 8, fontStyle: 'bold' },
               bodyStyles: { fontSize: 8, textColor: [19, 38, 59] },
               columnStyles: { 0: { cellWidth: 40 }, 1: { cellWidth: 92 }, 2: { cellWidth: 50 } },
               styles: { overflow: 'linebreak', cellPadding: 2 }
@@ -995,7 +1084,7 @@
 
       doc.setFontSize(8);
       doc.setTextColor(100, 100, 100);
-      doc.text("Provincia de Río Negro · Generado automáticamente desde la Agenda Ministerial", 105, 287, { align: "center" });
+      doc.text("Provincia de Río Negro · Generado automáticamente desde la Agenda Ministerial (DAEBot)", 105, 287, { align: "center" });
 
       doc.save(`Reporte_${fechaDesde}_al_${fechaHasta}.pdf`);
     };
@@ -1011,16 +1100,7 @@
     }
 
     document.addEventListener("DOMContentLoaded", async () => {
-      const welcomeOverlay = $("welcome-overlay");
-
-      const cerrarBienvenida = () => {
-        if (!welcomeOverlay || welcomeOverlay.classList.contains("fade-out")) return;
-        welcomeOverlay.classList.add("fade-out");
-        setTimeout(() => {
-          document.body.style.overflow = "auto";
-          welcomeOverlay.style.display = "none";
-        }, 700);
-      };
+      setTimeout(cerrarDiapositivaBienvenida, 2600);
 
       renderLeyenda();
       
@@ -1031,14 +1111,10 @@
       if(inputStart) inputStart.value = hoyStr;
       if(inputEnd) inputEnd.value = semanaStr;
 
-      const tiempoMinimo = new Promise(resolve => setTimeout(resolve, 1350));
       await Promise.all([
         cargarDesdeSupabase(),
-        cargarPendientesSupabase(),
-        tiempoMinimo
+        cargarPendientesSupabase()
       ]);
-
-      cerrarBienvenida();
 
       $("btn-exportar-doc-custom").onclick = descargarWordPersonalizado;
 

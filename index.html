@@ -358,9 +358,9 @@
       </div>
       <div id="calendar" class="calendar" aria-label="Calendario mensual"></div>
 
-      <!-- DETALLE DEL DÍA SELECCIONADO / HOY (PLEGABLE Y DESPLEGABLE) -->
+      <!-- DETALLE DEL DÍA SELECCIONADO / HOY (ARRANCA PLEGADO) -->
       <div class="calendar-detail mt-5 border-t border-emerald-200/80 pt-5">
-       <details id="selected-day-details" class="group" open>
+       <details id="selected-day-details" class="group">
         <summary class="flex cursor-pointer items-center justify-between gap-3 list-none select-none">
          <h3 id="selected-title" class="font-bold"></h3>
          <div class="flex items-center gap-2 flex-shrink-0">
@@ -382,7 +382,7 @@
        <div id="leyenda-colores" class="mt-4 flex flex-wrap gap-1.5"></div>
       </section>
 
-      <!-- PANEL DE REPORTES A MEDIDA CON DAEBOT ANIMADO -->
+      <!-- PANEL DE REPORTES A MEDIDA CON DAEBOT ANIMADO (ARRANCA PLEGADO) -->
       <section class="canva-panel card reveal p-4 sm:p-6 bg-gradient-to-br from-slate-900 to-slate-800 text-white shadow-xl" style="border: none;">
        <details class="group">
         <summary class="flex cursor-pointer items-center justify-between list-none select-none pb-1 gap-3">
@@ -525,7 +525,7 @@
        </details>
       </section>
 
-      <!-- PRÓXIMOS DÍAS (CON DESTELLO Y CONTADOR LLAMATIVO) -->
+      <!-- PRÓXIMOS DÍAS (ARRANCA PLEGADO) -->
       <section class="canva-panel card proximos-card-highlight reveal p-4 sm:p-6" aria-labelledby="proximos-heading">
        <details class="group">
         <summary class="flex cursor-pointer items-center justify-between list-none select-none gap-3">
@@ -568,7 +568,7 @@
        </div>
       </section>
 
-      <!-- LISTADO DE ACTIVIDADES (COMPACTO DEBAJO DE BUSCAR Y FILTRAR) -->
+      <!-- LISTADO DE ACTIVIDADES (ARRANCA PLEGADO) -->
       <section class="canva-panel card reveal px-4 py-3" aria-labelledby="list-heading" style="background: rgb(255, 255, 255);">
        <details class="group">
         <summary class="flex cursor-pointer items-center justify-between list-none select-none gap-2">
@@ -594,10 +594,10 @@
      </aside>
     </div>
 
-    <!-- ASUNTOS PENDIENTES (CON ALERTA MODERADA TITILANTE Y DESPLEGADO POR DEFECTO) -->
+    <!-- ASUNTOS PENDIENTES (ARRANCA PLEGADO) -->
     <section class="canva-panel card mt-7 reveal p-5 sm:p-7 border-t-4 border-t-amber-500 shadow-md" style="background: rgb(255, 255, 255);">
-     <details class="group" open>
-      <summary class="flex cursor-pointer items-center justify-between list-none select-none pb-2 gap-3">
+     <details class="group">
+      <summary class="flex cursor-pointer items-center justify-between list-none select-none gap-3">
        <div>
         <p class="canva-text text-xs font-bold uppercase tracking-widest text-amber-700">Prioridad y seguimiento</p>
         <div class="mt-1.5 flex flex-wrap items-center gap-2.5">
@@ -619,7 +619,7 @@
         </span>
        </div>
       </summary>
-      <div class="pt-4 border-t border-slate-200 space-y-3.5">
+      <div class="mt-4 pt-4 border-t border-slate-200 space-y-3.5">
        <div>
          <input id="search-pendientes" class="field text-sm" type="search" placeholder="Filtrar asuntos pendientes por palabra clave...">
        </div>
